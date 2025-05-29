@@ -1,0 +1,70 @@
+name: web
+
+replicaCount: 1
+maxSurge: 1
+maxUnavailable: 1
+
+image:
+  registry: harbor.k8s-sandbox.org
+  name: private/docker/k8s-hello
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: regcred
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+
+podLabels: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 56Mi
+  requests:
+    cpu: 100m
+    memory: 56Mi
+
+startupProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  failureThreshold: 3
+  periodSeconds: 3
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+    httpHeaders:
+  initialDelaySeconds: 3
+  periodSeconds: 3
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 3
+  periodSeconds: 3
+
+service:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: metrics
+      port: 8090
+      targetPort: 8090
+
+ingress:
+  ingressClassName: nginx-internal

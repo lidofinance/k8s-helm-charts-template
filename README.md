@@ -1,1 +1,1 @@
-# k8s-helm-charts-template
+# Helm charts template
