@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'helm-chart/**'
+      - '.github/workflows/link-helmchart.yml'
+
 jobs:
   lint-and-build:
     runs-on: ubuntu-latest
