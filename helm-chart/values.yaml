@@ -1,32 +1,44 @@
-name: web
+name: OVERRIDE-ME
 
+# Replica count for default deployment
 replicaCount: 1
+
+# Max surge for default deployment
 maxSurge: 1
+
+# Max unavailable for default deployment
 maxUnavailable: 1
 
+deployment:
+  enabled: true
+  # Default deployment annotations
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/_metrics"
+
+# Image for default deployment
 image:
   registry: harbor.k8s-sandbox.org
-  name: private/docker/k8s-hello
-  tag: latest
+  name: OVERRIDE-ME
+  tag: OVERRIDE-ME
+  # Image pull policy, permitted values: Always | IfNotPresent
   pullPolicy: IfNotPresent
 
-imagePullSecrets:
-  - name: regcred
 
 serviceAccount:
-  create: true
-  name: ""
-  annotations: {}
+  name: sa-lido-default
 
-podAnnotations: {}
+# Not uses need implement
 
-podLabels: {}
+# podAnnotations: {}
 
-nodeSelector: {}
+# podLabels: {}
 
-tolerations: []
+# nodeSelector: {}
 
-affinity: {}
+# tolerations: []
+
+# affinity: {}
 
 resources:
   limits:
@@ -57,7 +69,15 @@ readinessProbe:
   periodSeconds: 3
 
 service:
+  # Whether service is enabled or disabled
+  enabled: true
+  # Type of service, generally don't need to change
   type: ClusterIP
+    # Service specific annotations
+  annotations:
+    lido.fi/maintainer: Full name <OVERRIDE-ME@lido.fi>
+    prometheus.io/probe: "true"
+    prometheus.io/path: /_livenessProbe
   ports:
     - name: http
       port: 8080
@@ -66,5 +86,19 @@ service:
       port: 8090
       targetPort: 8090
 
+# Ingress configuration enable if you need to expose the service to the outside world
 ingress:
+  enabled: false
   ingressClassName: nginx-internal
+  rules:
+    - host: OVERRIDE-ME  # Replace with your actual host
+      paths:
+        - path: /
+          pathType: Prefix
+        - path: /api
+          pathType: Prefix
+  # TLS configuration uncomment if it necessary
+  # tls:
+  #   - hosts:
+  #       - OVERRIDE-ME  # Replace with your actual host
+  #     secretName: OVERRIDE-ME  # Optional: specify if you have TLS certificate

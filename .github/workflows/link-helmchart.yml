@@ -1,0 +1,23 @@
+name: Helm Chart CI
+
+on:
+  push:
+    paths:
+      - 'helm-chart/**'
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          persist-credentials: false
+
+      - name: Install Helm
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y helm
+
+      - name: Run helm lint
+        run: |
+          helm lint helm-chart/
