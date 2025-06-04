@@ -23,10 +23,17 @@ spec:
         {{- include "specific.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      securityContext:
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.securityContext.runAsGroup }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
       containers:
         - name: {{ .Values.name }}
           image: "{{ coalesce .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: {{ .Values.securityContext.allowPrivilegeEscalation }}
           resources:
             {{- .Values.resources | toYaml | nindent 12 }}
           {{- if .Values.startupProbe }}
@@ -46,4 +53,39 @@ spec:
     rollingUpdate:
       maxSurge: {{ .Values.maxSurge }}
       maxUnavailable: {{ .Values.maxUnavailable }}
+{{- end }}
+{{- if .Values.PodDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.name }}-pdb
+  namespace: {{ .Release.Namespace }}
+spec:
+  maxUnavailable: {{ .Values.PodDisruptionBudget.maxUnavailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.name }}
+{{- end }}
+{{- if .Values.HorizontalPodAutoscaler.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.name }}-hpa
+  namespace: {{ .Release.Namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.name }}
+  minReplicas: {{ .Values.HorizontalPodAutoscaler.minReplicas }}
+  maxReplicas: {{ .Values.HorizontalPodAutoscaler.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.HorizontalPodAutoscaler.averageUtilization }}
 {{- end }}

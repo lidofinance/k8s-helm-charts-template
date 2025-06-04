@@ -99,7 +99,7 @@ image:
 Then install using:
 
 ```bash
-helm install lido-app lido-artifactory/lido-app-templat --version 0.0.1 --values lido_app_value.yaml
+helm install lido-app lido-artifactory/lido-app-template --version 0.0.1 --values lido_app_value.yaml
 ```
 
 # Future Improvements

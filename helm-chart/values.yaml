@@ -16,6 +16,16 @@ deployment:
     prometheus.io/scrape: "true"
     prometheus.io/path: "/_metrics"
 
+PodDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+HorizontalPodAutoscaler:
+  enabled: true
+  minReplicas: 1 
+  maxReplicas: 3
+  averageUtilization: 70
+
 # Image for default deployment
 image:
   registry: harbor.k8s-sandbox.org
@@ -24,6 +34,13 @@ image:
   # Image pull policy, permitted values: Always | IfNotPresent
   pullPolicy: IfNotPresent
 
+terminationGracePeriodSeconds: 30
+
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+  allowPrivilegeEscalation: false
 
 serviceAccount:
   name: sa-lido-default
