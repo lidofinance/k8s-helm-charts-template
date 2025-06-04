@@ -4,3 +4,4 @@ description: This is a helm charts template
 type: application
 version: 1.0.0
 appVersion: 0.1.0
+icon: https://lido.fi/icon.png
