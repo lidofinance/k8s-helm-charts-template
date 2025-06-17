@@ -125,6 +125,9 @@ Default security context settings:
 - runAsUser: 65534
 - runAsGroup: 65534
 - fsGroup: 65534
+- privileged: false (controls whether the container can run in privileged mode)
+- allowPrivilegeEscalation: false (controls whether a process can gain more privileges than its parent process)
+- readOnlyRootFilesystem: true (controls whether the container's root filesystem is mounted as read-only)
 
 ## Customization
 

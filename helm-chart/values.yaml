@@ -40,9 +40,6 @@ securityContext:
   runAsUser: 65534
   runAsGroup: 65534
   fsGroup: 65534
-  # privileged: false
-  # allowPrivilegeEscalation: false
-  # readOnlyRootFilesystem: true
 
 serviceAccount:
   name: sa-lido-default
