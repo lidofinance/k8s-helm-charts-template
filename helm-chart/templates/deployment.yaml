@@ -33,9 +33,9 @@ spec:
           image: "{{ coalesce .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           imagePullPolicy: Always
           securityContext:
-            privileged: {{ default false .Values.securityContext.privileged }}
-            allowPrivilegeEscalation: {{ default false .Values.securityContext.allowPrivilegeEscalation }}
-            readOnlyRootFilesystem: {{ default true .Values.securityContext.readOnlyRootFilesystem }}
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
           resources:
             {{- .Values.resources | toYaml | nindent 12 }}
           {{- if .Values.startupProbe }}
