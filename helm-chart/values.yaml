@@ -16,6 +16,16 @@ deployment:
     prometheus.io/scrape: "true"
     prometheus.io/path: "/_metrics"
 
+PodDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+HorizontalPodAutoscaler:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  averageUtilization: 70
+
 # Image for default deployment
 image:
   registry: harbor.k8s-sandbox.org
@@ -24,6 +34,13 @@ image:
   # Image pull policy, permitted values: Always | IfNotPresent
   pullPolicy: IfNotPresent
 
+terminationGracePeriodSeconds: 30
+
+securityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+  readOnlyRootFilesystem: true
 
 serviceAccount:
   name: sa-lido-default
@@ -72,7 +89,8 @@ service:
   # Whether service is enabled or disabled
   enabled: true
   # Type of service, generally don't need to change
-  type: ClusterIP
+  type:
+    ClusterIP
     # Service specific annotations
   annotations:
     lido.fi/maintainer: Full name <OVERRIDE-ME@lido.fi>
@@ -91,7 +109,7 @@ ingress:
   enabled: false
   ingressClassName: nginx-internal
   rules:
-    - host: OVERRIDE-ME  # Replace with your actual host
+    - host: OVERRIDE-ME # Replace with your actual host
       paths:
         - path: /
           pathType: Prefix

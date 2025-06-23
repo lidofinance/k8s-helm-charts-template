@@ -1,7 +1,7 @@
 apiVersion: v2
 name: k8s-helm-charts-template
-description: This is a helm charts template
 type: application
+description: This is a helm charts template
 version: 1.0.0
 appVersion: 0.1.0
 icon: https://lido.fi/icon.png
