@@ -14,15 +14,37 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
-      - name: Install Helm
+      - name: Install helm and unittest plugin
         run: |
           HELM_VERSION="v3.13.2"
+          HELM_UNITTEST_PLUGIN_VERSION="0.8.2"
           curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz
           tar -zxvf helm.tar.gz
           sudo mv linux-amd64/helm /usr/local/bin/helm
           rm -rf linux-amd64 helm.tar.gz
+          helm plugin install https://github.com/helm-unittest/helm-unittest --version v${HELM_UNITTEST_PLUGIN_VERSION}
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@0d28d3144d3a25ea2cc349d6e59901c4ff469b3b # v2.7.0
 
       - name: Run helm lint
         run: |
           helm lint helm-chart/
+
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --chart-dirs . --target-branch ${{ github.event.repository.default_branch }})
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run chart-testing (lint)
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct lint --chart-dirs . --target-branch ${{ github.event.repository.default_branch }}
+
+      - name: Run unit tests
+        run: |
+          helm unittest helm-chart

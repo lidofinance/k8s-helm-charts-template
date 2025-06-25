@@ -1,0 +1,39 @@
+name: test-app
+replicaCount: 3
+deployment:
+  enabled: true
+  annotations:
+    custom-annotation: "true"
+serviceAccount:
+  name: test-sa
+image:
+  registry: docker.io
+  name: test-image
+  tag: v1.2.3
+resources:
+  limits:
+    cpu: "500m"
+    memory: "128Mi"
+  requests:
+    cpu: "250m"
+    memory: "64Mi"
+startupProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+  failureThreshold: 2
+  periodSeconds: 5
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8081
+  failureThreshold: 2
+  periodSeconds: 5
+livenessProbe:
+  httpGet:
+    path: /live
+    port: 8081
+  failureThreshold: 2
+  periodSeconds: 5
+maxSurge: 2
+maxUnavailable: 2
