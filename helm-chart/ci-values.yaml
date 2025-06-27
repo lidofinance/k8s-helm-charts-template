@@ -1,9 +1,16 @@
 name: test-app
-replicaCount: 3
+
 deployment:
   enabled: true
   annotations:
     custom-annotation: "true"
+replicas: 3
+terminationGracePeriodSeconds: 40
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  readOnlyRootFilesystem: false
 serviceAccount:
   name: test-sa
 image:
@@ -37,3 +44,14 @@ livenessProbe:
   periodSeconds: 5
 maxSurge: 2
 maxUnavailable: 2
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8081
+    - name: metrics
+      port: 9100
+      targetPort: 9100

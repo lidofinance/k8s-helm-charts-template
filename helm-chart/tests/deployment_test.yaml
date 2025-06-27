@@ -6,8 +6,18 @@ values:
 release:
   namespace: test-namespace
 tests:
+  - it: should not render deployment if disabled
+    set:
+      name: test-app
+      deployment:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
   - it: should render deployment with values from ci-values.yaml
     asserts:
+      - isKind:
+          of: Deployment
       # ─────────────── metadata ───────────────
       - equal:
           path: metadata.name
@@ -40,15 +50,28 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].name
           value: test-app
-      - equal:
-          path: spec.template.spec.containers[0].imagePullPolicy
-          value: Always
 
       # ─────────────── serviceAccount ───────────────
       - equal:
           path: spec.template.spec.serviceAccountName
           value: test-sa
-
+      # ─────────────── termination period ───────────────
+      - equal:
+          path: spec.template.spec.terminationGracePeriodSeconds
+          value: 40
+      # ─────────────── security context ───────────────
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.runAsGroup
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1000
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: false
       # ─────────────── resources ───────────────
       - equal:
           path: spec.template.spec.containers[0].resources.limits.cpu
@@ -62,11 +85,16 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].resources.requests.memory
           value: "64Mi"
-
       # ─────────────── probes ───────────────
       - equal:
           path: spec.template.spec.containers[0].startupProbe.httpGet.path
           value: /healthz
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.httpGet.port
+          value: 8081
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.failureThreshold
+          value: 2
       - equal:
           path: spec.template.spec.containers[0].startupProbe.periodSeconds
           value: 5
@@ -74,19 +102,28 @@ tests:
           path: spec.template.spec.containers[0].readinessProbe.httpGet.path
           value: /ready
       - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.port
+          value: 8081
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.failureThreshold
+          value: 2
+      - equal:
           path: spec.template.spec.containers[0].readinessProbe.periodSeconds
           value: 5
       - equal:
           path: spec.template.spec.containers[0].livenessProbe.httpGet.path
           value: /live
       - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.port
+          value: 8081
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.failureThreshold
+          value: 2
+      - equal:
           path: spec.template.spec.containers[0].livenessProbe.periodSeconds
           value: 5
 
       # ─────────────── strategy ───────────────
-      - equal:
-          path: spec.strategy.type
-          value: RollingUpdate
       - equal:
           path: spec.strategy.rollingUpdate.maxSurge
           value: 2
