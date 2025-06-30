@@ -10,11 +10,11 @@ metadata:
 spec:
   ingressClassName: {{ .Values.ingress.ingressClassName }}
   rules:
-  {{- range .Values.ingress.rules }}
+    {{- range .Values.ingress.rules }}
     - host: {{ .host | quote }}
       http:
         paths:
-        {{- range .paths }}
+          {{- range .paths }}
           - path: {{ .path }}
             pathType: {{ .pathType }}
             backend:
@@ -22,18 +22,18 @@ spec:
                 name: {{ $.Values.name }}
                 port:
                   name: http
-        {{- end }}
-  {{- end }}
+          {{- end }}
+    {{- end }}
   {{- if .Values.ingress.tls }}
   tls:
-  {{- range .Values.ingress.tls }}
+    {{- range .Values.ingress.tls }}
     - hosts:
-      {{- range .hosts }}
+        {{- range .hosts }}
         - {{ . | quote }}
-      {{- end }}
-      {{- if .secretName -}}
+        {{- end }}
+      {{- if .secretName }}
       secretName: {{ .secretName }}
-      {{- end -}}
-  {{- end }}
+      {{- end }}
+    {{- end }}
   {{- end }}
 {{- end }}

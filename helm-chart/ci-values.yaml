@@ -55,3 +55,26 @@ service:
     - name: metrics
       port: 9100
       targetPort: 9100
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  rules:
+    - host: test.local
+      paths:
+        - path: /test
+          pathType: Prefix
+  tls:
+    - hosts:
+        - test.local
+      secretName: test-tls
+
+PodDisruptionBudget:
+  enabled: true
+  maxUnavailable: 2
+
+HorizontalPodAutoscaler:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  averageUtilization: 75
