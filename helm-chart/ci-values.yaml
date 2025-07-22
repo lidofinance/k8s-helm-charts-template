@@ -1,0 +1,80 @@
+name: test-app
+
+deployment:
+  enabled: true
+  annotations:
+    custom-annotation: "true"
+replicas: 3
+terminationGracePeriodSeconds: 40
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  readOnlyRootFilesystem: false
+serviceAccount:
+  name: test-sa
+image:
+  registry: docker.io
+  name: test-image
+  tag: v1.2.3
+resources:
+  limits:
+    cpu: "500m"
+    memory: "128Mi"
+  requests:
+    cpu: "250m"
+    memory: "64Mi"
+startupProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+  failureThreshold: 2
+  periodSeconds: 5
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8081
+  failureThreshold: 2
+  periodSeconds: 5
+livenessProbe:
+  httpGet:
+    path: /live
+    port: 8081
+  failureThreshold: 2
+  periodSeconds: 5
+maxSurge: 2
+maxUnavailable: 2
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8081
+    - name: metrics
+      port: 9100
+      targetPort: 9100
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  rules:
+    - host: test.local
+      paths:
+        - path: /test
+          pathType: Prefix
+  tls:
+    - hosts:
+        - test.local
+      secretName: test-tls
+
+PodDisruptionBudget:
+  enabled: true
+  maxUnavailable: 2
+
+HorizontalPodAutoscaler:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  averageUtilization: 75

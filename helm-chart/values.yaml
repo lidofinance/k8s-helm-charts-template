@@ -1,7 +1,7 @@
 name: OVERRIDE-ME
 
 # Replica count for default deployment
-replicaCount: 1
+replicas: 1
 
 # Max surge for default deployment
 maxSurge: 1
@@ -109,7 +109,7 @@ ingress:
   enabled: false
   ingressClassName: nginx-internal
   rules:
-    - host: OVERRIDE-ME # Replace with your actual host
+    - host: OVERRIDE-ME  # Replace with your actual host
       paths:
         - path: /
           pathType: Prefix

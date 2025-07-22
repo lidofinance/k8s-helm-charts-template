@@ -58,7 +58,7 @@ The following table lists the configurable parameters of the chart and their def
 | Parameter                       | Description                         | Default                  |
 | ------------------------------- | ----------------------------------- | ------------------------ |
 | `name`                          | Application name                    | `OVERRIDE-ME`            |
-| `replicaCount`                  | Number of replicas                  | `1`                      |
+| `replicas`                      | Number of replicas                  | `1`                      |
 | `maxSurge`                      | Max surge for deployment            | `1`                      |
 | `maxUnavailable`                | Max unavailable for deployment      | `1`                      |
 | `image.registry`                | Container registry                  | `harbor.k8s-sandbox.org` |
@@ -134,7 +134,7 @@ To customize the deployment, create a custom values file:
 ```yaml
 # custom-values.yaml
 name: my-service
-replicaCount: 2
+replicas: 2
 image:
   name: my-service
   tag: v1.0.0
