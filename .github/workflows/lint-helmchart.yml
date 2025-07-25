@@ -1,13 +1,13 @@
-name: Helm Chart CI
+name: Lint and test Helm Chart
 
 on:
   push:
     paths:
       - 'helm-chart/**'
-      - '.github/workflows/link-helmchart.yml'
+      - '.github/workflows/*.yml'
 
 jobs:
-  lint-and-build:
+  lint-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

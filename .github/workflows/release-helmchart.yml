@@ -1,0 +1,68 @@
+name: Release Helm Chart
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  package-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install helm and unittest plugin
+        run: |
+          HELM_VERSION="v3.18.3"
+          HELM_SHA256="6ec85f306dd8fe9eb05c61ba4593182b2afcfefb52f21add3fe043ebbdc48e39"
+          curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz
+          echo "${HELM_SHA256}  helm.tar.gz" | sha256sum -c -
+          tar -zxvf helm.tar.gz
+          sudo mv linux-amd64/helm /usr/local/bin/helm
+          rm -rf linux-amd64 helm.tar.gz
+
+      - name: Get Commit Messages
+        id: commit_message
+        run: |
+          export COMMITS=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline)
+          echo "commit_message=$COMMITS" >> $GITHUB_ENV
+
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "CHART_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Run helm lint
+        run: |
+          mkdir -p dist
+          helm lint helm-chart/
+          helm package helm-chart/ --version "$CHART_VERSION" --destination dist
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ env.commit_message }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Helm chart package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/${{ env.CHART_VERSION }}.tgz
+          asset_name: ${{ env.CHART_VERSION }}.tgz
+          asset_content_type: application/gzip
