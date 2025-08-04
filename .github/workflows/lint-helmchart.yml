@@ -1,13 +1,13 @@
-name: Helm Chart CI
+name: Lint and test Helm Chart
 
 on:
   push:
     paths:
       - 'helm-chart/**'
-      - '.github/workflows/link-helmchart.yml'
+      - '.github/workflows/*.yml'
 
 jobs:
-  lint-and-build:
+  lint-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,19 +18,17 @@ jobs:
 
       - name: Install helm and unittest plugin
         run: |
-          HELM_VERSION="v3.18.3"
-          HELM_SHA256="6ec85f306dd8fe9eb05c61ba4593182b2afcfefb52f21add3fe043ebbdc48e39"
+          HELM_VERSION="3.18.4-1"
           HELM_UNITTEST_PLUGIN_VERSION="0.8.2"
           HELM_UNITTEST_PLUGIN_SHA256="b94e638e72cf00034654b70944c0d20cb5d0c3cf"
-          curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz
-          echo "${HELM_SHA256}  helm.tar.gz" | sha256sum -c -
-          tar -zxvf helm.tar.gz
-          sudo mv linux-amd64/helm /usr/local/bin/helm
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt update && sudo apt install -y helm=${HELM_VERSION}
           git clone https://github.com/helm-unittest/helm-unittest
           cd helm-unittest
           git checkout ${HELM_UNITTEST_PLUGIN_SHA256}
           helm plugin install .
-          rm -rf linux-amd64 helm-unittest helm.tar.gz
+          rm -rf helm-unittest
 
       - name: Set up chart-testing
         uses: helm/chart-testing-action@0d28d3144d3a25ea2cc349d6e59901c4ff469b3b # v2.7.0
