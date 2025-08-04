@@ -26,6 +26,10 @@ jobs:
           echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
           sudo apt update && sudo apt install -y helm=${HELM_VERSION}
 
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "CHART_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
       - name: Run helm lint
         run: |
           mkdir -p dist
@@ -49,10 +53,6 @@ jobs:
         run: |
           export COMMITS=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline)
           echo "commit_message=$COMMITS" >> $GITHUB_ENV
-
-      - name: Extract version from tag
-        id: extract_version
-        run: echo "CHART_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Create Release
         id: create_release
