@@ -30,7 +30,7 @@ jobs:
         id: extract_version
         run: echo "CHART_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - name: Run helm lint
+      - name: Run helm lint and package
         run: |
           mkdir -p dist
           helm lint helm-chart/
