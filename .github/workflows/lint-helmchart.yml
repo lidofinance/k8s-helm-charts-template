@@ -21,9 +21,9 @@ jobs:
           HELM_VERSION="3.18.4-1"
           HELM_UNITTEST_PLUGIN_VERSION="0.8.2"
           HELM_UNITTEST_PLUGIN_SHA256="b94e638e72cf00034654b70944c0d20cb5d0c3cf"
-          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
-          apt update && apt install -y helm=${HELM_VERSION}
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt update && sudo apt install -y helm=${HELM_VERSION}
           git clone https://github.com/helm-unittest/helm-unittest
           cd helm-unittest
           git checkout ${HELM_UNITTEST_PLUGIN_SHA256}
