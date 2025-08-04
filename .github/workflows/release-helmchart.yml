@@ -19,8 +19,9 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Install helm and unittest plugin
+      - name: Install helm
         run: |
+          HELM_VERSION="3.18.4-1"
           curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
           echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
           apt update && apt install -y helm=${HELM_VERSION}
