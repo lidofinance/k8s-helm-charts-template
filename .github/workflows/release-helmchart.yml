@@ -21,13 +21,27 @@ jobs:
 
       - name: Install helm and unittest plugin
         run: |
-          HELM_VERSION="v3.18.3"
-          HELM_SHA256="6ec85f306dd8fe9eb05c61ba4593182b2afcfefb52f21add3fe043ebbdc48e39"
-          curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz
-          echo "${HELM_SHA256}  helm.tar.gz" | sha256sum -c -
-          tar -zxvf helm.tar.gz
-          sudo mv linux-amd64/helm /usr/local/bin/helm
-          rm -rf linux-amd64 helm.tar.gz
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
+          apt update && apt install -y helm=${HELM_VERSION}
+
+      - name: Run helm lint
+        run: |
+          mkdir -p dist
+          helm lint helm-chart/
+          chart_version_from_file=$(grep '^version:' helm-chart/Chart.yaml | awk '{print $2}')
+          if [ "$chart_version_from_file" != "$CHART_VERSION" ]; then
+            echo "Version mismatch: Chart.yaml version is $chart_version_from_file but tag is $CHART_VERSION!"
+            exit 1
+          fi
+          helm package helm-chart/ --version "$CHART_VERSION" --destination dist
+
+      - name: Calculate SHA256 checksum
+        id: checksum
+        run: |
+          CHART_FILE=dist/${CHART_VERSION}.tgz
+          SHA256=$(sha256sum "$CHART_FILE" | awk '{print $1}')
+          echo "sha256=$SHA256" >> $GITHUB_ENV
 
       - name: Get Commit Messages
         id: commit_message
@@ -39,12 +53,6 @@ jobs:
         id: extract_version
         run: echo "CHART_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - name: Run helm lint
-        run: |
-          mkdir -p dist
-          helm lint helm-chart/
-          helm package helm-chart/ --version "$CHART_VERSION" --destination dist
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -53,7 +61,11 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: ${{ env.commit_message }}
+          body: | 
+            ${{ env.commit_message }}
+
+            SHA256 checksum of the Helm chart:
+            `${{ env.sha256 }}`
           draft: false
           prerelease: false
 
