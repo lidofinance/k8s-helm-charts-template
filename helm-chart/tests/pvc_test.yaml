@@ -1,0 +1,42 @@
+suite: Test PersistentVolumeClaim template with CI Values
+templates:
+  - templates/pvc.yaml
+values:
+  - ../ci-values.yaml
+release:
+  namespace: test-namespace
+tests:
+  - it: should not render pvc if disabled
+    set:
+      name: test-app
+      pvc:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: should render pvc with values from ci-values.yaml
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      # ─────────────── metadata ───────────────
+      - equal:
+          path: metadata.name
+          value: test-app
+      - equal:
+          path: metadata.namespace
+          value: test-namespace
+      # ─────────────── template labels ───────────────
+      - isNotEmpty:
+          path: spec.template.metadata.labels
+      # ─────────────── spec ───────────────
+      - equal:
+          path: spec.storageClassName
+          value: longhorn-standard
+      # ─────────────── access mode ───────────────
+      - contains:
+          path: spec.accessModes
+          content: ReadWriteOnce
+      # ─────────────── resources ───────────────
+      - equal:
+          path: spec.resources.requests.storage
+          value: 100Mi

@@ -104,6 +104,14 @@ service:
       port: 8090
       targetPort: 8090
 
+pvc:
+  enabled: false
+  storageClass: "longhorn-standard"
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  mountPath: /data
+
 # Ingress configuration enable if you need to expose the service to the outside world
 ingress:
   enabled: false
