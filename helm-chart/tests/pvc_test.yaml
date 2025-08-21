@@ -41,5 +41,5 @@ tests:
           content: ReadWriteOnce
       # ─────────────── resources ───────────────
       - equal:
-          path: resources.requests.storage
+          path: spec.resources.requests.storage
           value: 100Mi

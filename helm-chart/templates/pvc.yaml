@@ -8,10 +8,8 @@ metadata:
   labels:
     {{- include "specific.labels" . | nindent 4 }}
 spec:
-  {{- with .Values.pvc.selector }}
   selector:
     app.kubernetes.io/name: {{ .Values.name }}
-  {{- end }}
   accessModes:
     {{- toYaml .Values.pvc.accessModes | nindent 4 }}
   resources:
