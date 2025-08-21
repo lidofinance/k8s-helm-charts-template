@@ -71,6 +71,8 @@ The following table lists the configurable parameters of the chart and their def
 | `terminationGracePeriodSeconds` | Pod termination grace period        | `30`                     |
 | `securityContext`               | Pod security context settings       | See values.yaml          |
 | `serviceAccount.name`           | Service account name                | `sa-lido-default`        |
+| `pvc.size`                      | PVC size request                    | `1Gi`                    |
+| `pvc.mountPath`                 | PVC mountPath inside cotainer       | `/data`                  |
 
 ### Health Checks
 
@@ -108,6 +110,13 @@ Horizontal Pod Autoscaler is enabled by default with:
 - minReplicas: 1
 - maxReplicas: 3
 - averageUtilization: 70%
+
+### PersistentVolumeClaim
+
+PersistentVolumeClaim is disabled by default. To enable it:
+
+1. Set `pvc.enabled` to `true`
+2. Optionally change `pvc.size` and `pvc.mountPath`
 
 ### Ingress
 
