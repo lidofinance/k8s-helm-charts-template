@@ -56,6 +56,14 @@ service:
       port: 9100
       targetPort: 9100
 
+pvc:
+  enabled: true
+  storageClass: "longhorn-standard"
+  accessModes:
+    - ReadWriteOnce
+  size: 100Mi
+  mountPath: /data
+
 ingress:
   enabled: true
   ingressClassName: nginx

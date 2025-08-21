@@ -50,6 +50,17 @@ spec:
           livenessProbe:
             {{- .Values.livenessProbe | toYaml | nindent 12 }}
           {{- end }}
+          {{- if .Values.pvc.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.pvc.mountPath }}
+          {{- end }}
+      {{- if .Values.pvc.enabled }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.name }}
+      {{- end }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
