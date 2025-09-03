@@ -1,5 +1,5 @@
 {{- define "common.labels" -}}
-app.kubernetes.io/version: {{ coalesce .Values.image.tag .Chart.Version }}
+app.kubernetes.io/version: {{ .Chart.Version }}
 app.kubernetes.io/instance: {{ .Chart.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
