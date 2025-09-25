@@ -93,7 +93,7 @@ service:
     ClusterIP
     # Service specific annotations
   annotations:
-    lido.fi/maintainer: Full name test
+    lido.fi/maintainer: Full name <OVERRIDE-ME@lido.fi>
     prometheus.io/probe: "true"
     prometheus.io/path: /_livenessProbe
   ports:
@@ -129,7 +129,7 @@ pvc:
 
 # Ingress configuration enable if you need to expose the service to the outside world
 ingress:
-  enabled: true
+  enabled: false
   ingressClassName: nginx-internal
   rules:
     - host: OVERRIDE-ME  # Replace with your actual host
