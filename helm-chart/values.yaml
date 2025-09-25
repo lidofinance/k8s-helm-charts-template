@@ -102,14 +102,15 @@ service:
       targetPort: 80
 
 servicemonitor:
-  - interval: 15s
-    path: /metrics
-    port: metrics
-    scheme: http
-  - interval: 30s
-    path: /metrics_2
-    port: metrics
-    scheme: http
+  endpoints:
+    - interval: 15s
+      path: /metrics
+      port: metrics
+      scheme: http
+    - interval: 30s
+      path: /metrics_2
+      port: metrics
+      scheme: http
 
 pvc:
   enabled: true
