@@ -105,6 +105,12 @@ pvc:
   enabled: true
 
 pvcs:
+  - name: app-shared
+    accessModes:
+      - ReadWriteMany
+    size: 1Gi
+    storageClass: "longhorn-standard"
+
   - name: app-data
     accessModes:
       - ReadWriteOnce
@@ -121,6 +127,10 @@ volumes:
   - name: app-data
     persistentVolumeClaim:
       claimName: app-data
+
+  - name: app-shared
+    persistentVolumeClaim:
+      claimName: app-shared
 
   - name: app-cache
     persistentVolumeClaim:
@@ -168,6 +178,8 @@ containers:
     volumeMounts:
       - name: app-data
         mountPath: /storage/data
+      - name: app-shared
+        mountPath: /storage/shared
 
   - name: nginx
     image:
@@ -197,3 +209,5 @@ containers:
     volumeMounts:
       - name: app-cache
         mountPath: /storage/cache
+      - name: app-shared
+        mountPath: /storage/shared
