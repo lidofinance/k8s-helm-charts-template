@@ -1,4 +1,4 @@
-name: nginx
+name: multicontainer
 
 # Replica count for default deployment
 replicas: 1
@@ -103,19 +103,19 @@ service:
 
 pvc:
   enabled: true
-        
+
 pvcs:
   - name: app-data
     accessModes:
       - ReadWriteOnce
     size: 1Gi
-    storageClass: "longhorn"
+    storageClass: "longhorn-standard"
 
   - name: app-cache
     accessModes:
       - ReadWriteOnce
     size: 2Gi
-    storageClass: "longhorn"
+    storageClass: "longhorn-standard"
 
 volumes:
   - name: app-data
@@ -194,6 +194,6 @@ containers:
       httpGet:
         path: /
         port: 8080
-          #    volumeMounts:
-          #      - name: app-cache
-          #        mountPath: /storage/cache
+    volumeMounts:
+      - name: app-cache
+        mountPath: /storage/cache
