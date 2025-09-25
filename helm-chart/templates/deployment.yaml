@@ -53,6 +53,18 @@ spec:
             {{- $.Values.resources | toYaml | nindent 12 }}
           {{- end }}
           {{- with $c.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $c.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $c.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if $c.volumeMounts }}
           volumeMounts:
             {{- toYaml $c.volumeMounts | nindent 12 }}
           {{- end }}
