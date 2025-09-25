@@ -1,23 +1,25 @@
 {{- if .Values.pvc.enabled }}
+{{- range .Values.pvcs }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ .Values.name }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace }}
   labels:
-    {{- include "specific.labels" . | nindent 4 }}
+    {{- include "specific.labels" $ | nindent 4 }}
 spec:
   accessModes:
-    {{- toYaml .Values.pvc.accessModes | nindent 4 }}
+    {{- toYaml .accessModes | nindent 4 }}
   resources:
     requests:
-      storage: {{ .Values.pvc.size }}
-  {{- if .Values.pvc.storageClass }}
-    {{- if eq "-" .Values.pvc.storageClass }}
+      storage: {{ .size }}
+{{- if .storageClass }}
+  {{- if eq "-" .storageClass }}
   storageClassName: ""
-    {{- else }}
-  storageClassName: {{ .Values.pvc.storageClass }}
-    {{- end }}
+  {{- else }}
+  storageClassName: {{ .storageClass }}
   {{- end }}
+{{- end }}
+{{- end }}
 {{- end }}

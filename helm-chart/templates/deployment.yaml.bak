@@ -29,40 +29,37 @@ spec:
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
       containers:
-        {{- if .Values.containers }}
-        {{- range $i, $c := .Values.containers }}
-        - name: {{ default $.Values.name $c.name }}
-          image: "{{ coalesce ($c.image.name | default $.Values.image.name) }}:{{ default $.Values.image.tag $c.image.tag }}"
-          imagePullPolicy: {{ default "Always" $c.imagePullPolicy }}
+        - name: {{ .Values.name }}
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
           securityContext:
             privileged: false
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: {{ default $.Values.securityContext.readOnlyRootFilesystem (and $c.securityContext $c.securityContext.readOnlyRootFilesystem) }}
-            {{- with $c.securityContext }}
-            {{- with .runAsUser }}
-            runAsUser: {{ . }}
-            {{- end }}
-            {{- with .runAsGroup }}
-            runAsGroup: {{ . }}
-            {{- end }}
-            {{- end }}          {{- with $c.resources }}
+            readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
           resources:
-            {{- toYaml . | nindent 12 }}
-          {{- else }}
-          resources:
-            {{- $.Values.resources | toYaml | nindent 12 }}
+            {{- .Values.resources | toYaml | nindent 12 }}
+          {{- if .Values.startupProbe }}
+          startupProbe:
+            {{- .Values.startupProbe | toYaml | nindent 12 }}
           {{- end }}
-          {{- with $c.startupProbe }}
+          {{- if .Values.readinessProbe }}
+          readinessProbe:
+            {{- .Values.readinessProbe | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.livenessProbe }}
+          livenessProbe:
+            {{- .Values.livenessProbe | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.pvc.enabled }}
           volumeMounts:
-            {{- toYaml $c.volumeMounts | nindent 12 }}
+            - name: data
+              mountPath: {{ .Values.pvc.mountPath }}
           {{- end }}
-        {{- end }}
-        {{- end }}
-      {{- if and .Values.volumes .Values.pvc.enabled }}
+      {{- if .Values.pvc.enabled }}
       volumes:
-        {{- with .Values.volumes }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.name }}
       {{- end }}
   strategy:
     type: RollingUpdate

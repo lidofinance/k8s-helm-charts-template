@@ -53,12 +53,25 @@ spec:
             {{- $.Values.resources | toYaml | nindent 12 }}
           {{- end }}
           {{- with $c.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $c.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $c.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if $c.volumeMounts }}
           volumeMounts:
             {{- toYaml $c.volumeMounts | nindent 12 }}
           {{- end }}
         {{- end }}
         {{- end }}
-      {{- if and .Values.volumes .Values.pvc.enabled }}
+      {{- if or .Values.pvc.enabled .Values.volumes }}
+      {{- if or .Values.volumes .Values.pvc.enabled }}
       volumes:
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}

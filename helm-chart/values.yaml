@@ -1,4 +1,4 @@
-name: OVERRIDE-ME
+name: nginx
 
 # Replica count for default deployment
 replicas: 1
@@ -28,22 +28,21 @@ HorizontalPodAutoscaler:
 
 # Image for default deployment
 image:
-  # Example name: harbor.k8s-sandbox.org/project_name/image_name
-  name: OVERRIDE-ME
-  tag: OVERRIDE-ME
+  name: harbor.k8s-sandbox.org/updater-test/nginx
+  tag: latest
   # Image pull policy, permitted values: Always | IfNotPresent
   pullPolicy: IfNotPresent
 
 terminationGracePeriodSeconds: 30
 
 securityContext:
-  runAsUser: 65534
-  runAsGroup: 65534
-  fsGroup: 65534
-  readOnlyRootFilesystem: true
+  # runAsUser: 101
+  # runAsGroup: 101
+  # fsGroup: 101
+  readOnlyRootFilesystem: false
 
 serviceAccount:
-  name: sa-lido-default
+  name: default
 
 # Not uses need implement
 
@@ -64,26 +63,24 @@ resources:
   requests:
     cpu: 100m
     memory: 56Mi
-
 startupProbe:
   httpGet:
-    path: /healthz
-    port: 8080
-  failureThreshold: 3
-  periodSeconds: 3
-livenessProbe:
-  httpGet:
-    path: /healthz
-    port: 8080
-    httpHeaders:
-  initialDelaySeconds: 3
-  periodSeconds: 3
+    path: /
+    port: 80
+  failureThreshold: 2
+  periodSeconds: 5
 readinessProbe:
   httpGet:
     path: /healthz
     port: 8080
-  initialDelaySeconds: 3
-  periodSeconds: 3
+  failureThreshold: 2
+  periodSeconds: 5
+livenessProbe:
+  httpGet:
+    path: /
+    port: 80
+  failureThreshold: 2
+  periodSeconds: 5
 
 service:
   # Whether service is enabled or disabled
@@ -93,38 +90,110 @@ service:
     ClusterIP
     # Service specific annotations
   annotations:
-    lido.fi/maintainer: Full name <OVERRIDE-ME@lido.fi>
+    lido.fi/maintainer: Full name test
     prometheus.io/probe: "true"
     prometheus.io/path: /_livenessProbe
   ports:
-    - name: http
+    - name: nginx-http
       port: 8080
       targetPort: 8080
-    - name: metrics
-      port: 8090
-      targetPort: 8090
+    - name: caddy-http
+      port: 8088
+      targetPort: 80
 
 pvc:
-  enabled: false
-  storageClass: "longhorn-standard"
-  accessModes:
-    - ReadWriteOnce
-  size: 1Gi
-  mountPath: /data
+  enabled: true
+        
+pvcs:
+  - name: app-data
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    storageClass: "longhorn"
+
+  - name: app-cache
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
+    storageClass: "longhorn"
+
+volumes:
+  - name: app-data
+    persistentVolumeClaim:
+      claimName: app-data
+
+  - name: app-cache
+    persistentVolumeClaim:
+      claimName: app-cache
 
 # Ingress configuration enable if you need to expose the service to the outside world
 ingress:
-  enabled: false
+  enabled: true
   ingressClassName: nginx-internal
   rules:
-    - host: OVERRIDE-ME  # Replace with your actual host
+    - host: hello-1.ramiz.k8s-sandbox.org
       paths:
         - path: /
           pathType: Prefix
-        - path: /api
-          pathType: Prefix
-  # TLS configuration uncomment if it necessary
-  # tls:
-  #   - hosts:
-  #       - OVERRIDE-ME  # Replace with your actual host
-  #     secretName: OVERRIDE-ME  # Optional: specify if you have TLS certificate
+  tls:
+    - hosts:
+        - hello-1.ramiz.k8s-sandbox.org
+
+containers:
+  - name: caddy
+    image:
+      name: docker.io/caddy
+      tag: latest
+    imagePullPolicy: Always
+    resources:
+      requests:
+        cpu: "150m"
+        memory: "128Mi"
+    startupProbe:
+      httpGet:
+        path: /
+        port: 80
+      failureThreshold: 2
+      periodSeconds: 5
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 80
+      failureThreshold: 2
+      periodSeconds: 5
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 80
+    volumeMounts:
+      - name: app-data
+        mountPath: /storage/data
+
+  - name: nginx
+    image:
+      name: harbor.k8s-sandbox.org/updater-test/nginx
+      tag: dev
+    imagePullPolicy: Always
+    resources:
+      requests:
+        cpu: "130m"
+        memory: "100Mi"
+    startupProbe:
+      httpGet:
+        path: /
+        port: 8080
+      failureThreshold: 2
+      periodSeconds: 5
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 8080
+      failureThreshold: 2
+      periodSeconds: 5
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 8080
+          #    volumeMounts:
+          #      - name: app-cache
+          #        mountPath: /storage/cache
