@@ -37,10 +37,10 @@ image:
 terminationGracePeriodSeconds: 30
 
 securityContext:
-  # runAsUser: 101
-  # runAsGroup: 101
-  # fsGroup: 101
-  readOnlyRootFilesystem: false
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+  readOnlyRootFilesystem: true
 
 serviceAccount:
   name: default
