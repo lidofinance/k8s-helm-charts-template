@@ -146,9 +146,9 @@ ingress:
 
 containers:
   - name: container-1
-    # image:
-    #   name: harbor.k8s-sandbox.org/project_name/image_name
-    #   tag: latest
+    image:
+      name: OVERRIDE-ME
+      tag: OVERRIDE-ME
     # imagePullPolicy: Always
     # resources:
     #   requests:
