@@ -14,8 +14,7 @@ securityContext:
 serviceAccount:
   name: test-sa
 image:
-  registry: docker.io
-  name: test-image
+  name: docker.io/test-image
   tag: v1.2.3
 resources:
   limits:

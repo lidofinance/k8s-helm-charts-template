@@ -61,8 +61,7 @@ The following table lists the configurable parameters of the chart and their def
 | `replicas`                      | Number of replicas                  | `1`                      |
 | `maxSurge`                      | Max surge for deployment            | `1`                      |
 | `maxUnavailable`                | Max unavailable for deployment      | `1`                      |
-| `image.registry`                | Container registry                  | `harbor.k8s-sandbox.org` |
-| `image.name`                    | Container image name                | `OVERRIDE-ME`            |
+| `image.name`                    | Container registry/image            | `OVERRIDE-ME`            |
 | `image.tag`                     | Container image tag                 | `OVERRIDE-ME`            |
 | `image.pullPolicy`              | Image pull policy                   | `IfNotPresent`           |
 | `service.type`                  | Kubernetes service type             | `ClusterIP`              |
