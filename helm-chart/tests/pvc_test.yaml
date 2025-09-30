@@ -8,7 +8,7 @@ release:
 tests:
   - it: should not render pvc if disabled
     set:
-      name: test-app
+      name: data
       pvc:
         enabled: false
     asserts:
@@ -21,7 +21,7 @@ tests:
       # ─────────────── metadata ───────────────
       - equal:
           path: metadata.name
-          value: test-app
+          value: data
       - equal:
           path: metadata.namespace
           value: test-namespace

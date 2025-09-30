@@ -23,24 +23,6 @@ resources:
   requests:
     cpu: "250m"
     memory: "64Mi"
-startupProbe:
-  httpGet:
-    path: /healthz
-    port: 8081
-  failureThreshold: 2
-  periodSeconds: 5
-readinessProbe:
-  httpGet:
-    path: /ready
-    port: 8081
-  failureThreshold: 2
-  periodSeconds: 5
-livenessProbe:
-  httpGet:
-    path: /live
-    port: 8081
-  failureThreshold: 2
-  periodSeconds: 5
 maxSurge: 2
 maxUnavailable: 2
 
@@ -55,13 +37,26 @@ service:
       port: 9100
       targetPort: 9100
 
+servicemonitor:
+  endpoints:
+    - interval: 15s
+      path: /metrics
+      port: metrics
+      scheme: http
+
 pvc:
   enabled: true
-  storageClass: "longhorn-standard"
-  accessModes:
-    - ReadWriteOnce
-  size: 100Mi
-  mountPath: /data
+pvcs:
+  - name: data
+    accessModes:
+      - ReadWriteOnce
+    size: 100Mi
+    storageClass: "longhorn-standard"
+
+volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: data
 
 ingress:
   enabled: true
@@ -85,3 +80,30 @@ HorizontalPodAutoscaler:
   minReplicas: 2
   maxReplicas: 5
   averageUtilization: 75
+
+containers:
+  - name: container-1
+    image:
+      name: docker.io/test-image
+      tag: v1.3.0
+    startupProbe:
+      httpGet:
+        path: /healthz
+        port: 8081
+      failureThreshold: 2
+      periodSeconds: 5
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: 8081
+      failureThreshold: 2
+      periodSeconds: 5
+    livenessProbe:
+      httpGet:
+        path: /live
+        port: 8081
+      failureThreshold: 2
+      periodSeconds: 5
+    volumeMounts:
+      - name: /data
+        mountPath: /data

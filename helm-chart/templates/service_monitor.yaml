@@ -8,10 +8,12 @@ metadata:
     {{- include "specific.labels" . | nindent 4 }}
 spec:
   endpoints:
-    - interval: 15s
-      path: /metrics
-      port: metrics
-      scheme: http
+    {{- range .Values.servicemonitor.endpoints }}
+    - interval: {{ .interval }}
+      path: {{ .path }}
+      port: {{ .port }}
+      scheme: {{ .scheme }}
+    {{- end }}
   selector:
     matchExpressions:
       - key: prometheus.io/service-monitor

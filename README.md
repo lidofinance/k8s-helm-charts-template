@@ -16,6 +16,7 @@ The template includes pre-configured settings for:
 - Horizontal Pod Autoscaler
 - Service Monitor for Prometheus
 - Security Context configurations
+- Persistent Volume Claims for storage
 
 ## Prerequisites
 
@@ -70,8 +71,10 @@ The following table lists the configurable parameters of the chart and their def
 | `terminationGracePeriodSeconds` | Pod termination grace period        | `30`                     |
 | `securityContext`               | Pod security context settings       | See values.yaml          |
 | `serviceAccount.name`           | Service account name                | `sa-lido-default`        |
-| `pvc.size`                      | PVC size request                    | `1Gi`                    |
-| `pvc.mountPath`                 | PVC mountPath inside cotainer       | `/data`                  |
+| `pvc.enabled`                   | Enable or disable PVC               | `false`                  |
+| `pvcs`                          | List of PVCs, see values.yaml       | See values.yaml          |
+| `containers`                    | List of containers with params      | See values.yaml          |
+| `servicemonitor.endpoints`      | List of ServiceMonitors             | See values.yaml          |
 
 ### Health Checks
 
@@ -91,7 +94,7 @@ The chart includes pre-configured health checks:
 
 Prometheus monitoring is enabled by default with the following features:
 
-- Service Monitor for Prometheus Operator integration
+- Service Monitor for Prometheus Operator integration (Can be configured with additional endpoints)
 - Default metrics endpoint: `/_metrics`
 - Liveness probe metrics: `/_livenessProbe`
 - Prometheus scrape annotations on deployment
@@ -115,7 +118,7 @@ Horizontal Pod Autoscaler is enabled by default with:
 PersistentVolumeClaim is disabled by default. To enable it:
 
 1. Set `pvc.enabled` to `true`
-2. Optionally change `pvc.size` and `pvc.mountPath`
+2. Set list of PVCs with params under the `pvcs` value.
 
 ### Ingress
 
@@ -125,6 +128,10 @@ Ingress is disabled by default. To enable it:
 2. Configure your host and paths in the `ingress.rules` section
 3. Optionally configure TLS
 4. Default ingress class: `nginx-internal`
+
+### Containers
+
+The template supports multiple containers within one Pod. You can set a list of containers under the `cotainers` value with their own name, image, tags, probes, volumes, etc. See values.yaml for examples.
 
 ### Security Context
 

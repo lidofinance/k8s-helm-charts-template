@@ -43,7 +43,7 @@ securityContext:
   readOnlyRootFilesystem: true
 
 serviceAccount:
-  name: sa-lido-default
+  name: default
 
 # Not uses need implement
 
@@ -65,26 +65,6 @@ resources:
     cpu: 100m
     memory: 56Mi
 
-startupProbe:
-  httpGet:
-    path: /healthz
-    port: 8080
-  failureThreshold: 3
-  periodSeconds: 3
-livenessProbe:
-  httpGet:
-    path: /healthz
-    port: 8080
-    httpHeaders:
-  initialDelaySeconds: 3
-  periodSeconds: 3
-readinessProbe:
-  httpGet:
-    path: /healthz
-    port: 8080
-  initialDelaySeconds: 3
-  periodSeconds: 3
-
 service:
   # Whether service is enabled or disabled
   enabled: true
@@ -104,13 +84,28 @@ service:
       port: 8090
       targetPort: 8090
 
+servicemonitor:
+  endpoints:
+    - interval: 15s
+      path: /metrics
+      port: metrics
+      scheme: http
+
 pvc:
   enabled: false
-  storageClass: "longhorn-standard"
-  accessModes:
-    - ReadWriteOnce
-  size: 1Gi
-  mountPath: /data
+# Example pvc
+# pvcs:
+#   - name: app-shared
+#     accessModes:
+#       - ReadWriteMany
+#     size: 1Gi
+#     storageClass: "longhorn-standard"
+
+# Example volume
+# volumes:
+#   - name: app-shared
+#     persistentVolumeClaim:
+#       claimName: app-shared
 
 # Ingress configuration enable if you need to expose the service to the outside world
 ingress:
@@ -128,3 +123,36 @@ ingress:
   #   - hosts:
   #       - OVERRIDE-ME  # Replace with your actual host
   #     secretName: OVERRIDE-ME  # Optional: specify if you have TLS certificate
+
+containers:
+  - name: container-1
+    image:
+      name: OVERRIDE-ME
+      tag: OVERRIDE-ME
+    startupProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      failureThreshold: 3
+      periodSeconds: 3
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+        httpHeaders:
+      initialDelaySeconds: 3
+      periodSeconds: 3
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 3
+      periodSeconds: 3
+    # imagePullPolicy: Always
+    # resources:
+    #   requests:
+    #     cpu: "150m"
+    #     memory: "128Mi"
+    # volumeMounts:
+    #   - name: app-shared
+    #     mountPath: /storage/shared

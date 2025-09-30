@@ -46,10 +46,10 @@ tests:
       # ─────────────── container.image ───────────────
       - equal:
           path: spec.template.spec.containers[0].image
-          value: "docker.io/test-image:v1.2.3"
+          value: "docker.io/test-image:v1.3.0"
       - equal:
           path: spec.template.spec.containers[0].name
-          value: test-app
+          value: container-1
 
       # ─────────────── serviceAccount ───────────────
       - equal:
@@ -122,7 +122,13 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].livenessProbe.periodSeconds
           value: 5
-
+      # ─────────────── volumes ───────────────
+      - equal:
+          path: spec.template.spec.volumes[0].name
+          value: data
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].name
+          value: /data
       # ─────────────── strategy ───────────────
       - equal:
           path: spec.strategy.rollingUpdate.maxSurge
