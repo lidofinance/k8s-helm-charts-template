@@ -18,7 +18,7 @@ jobs:
 
       - name: Install helm and unittest plugin
         run: |
-          HELM_VERSION="3.18.4-1"
+          HELM_VERSION="3.18.6-1"
           HELM_UNITTEST_PLUGIN_VERSION="0.8.2"
           HELM_UNITTEST_PLUGIN_SHA256="b94e638e72cf00034654b70944c0d20cb5d0c3cf"
           curl -fsSL https://packages.buildkite.com/helm-linux/helm-debian/gpgkey | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
