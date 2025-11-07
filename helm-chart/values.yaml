@@ -28,7 +28,7 @@ HorizontalPodAutoscaler:
 
 # Image for default deployment
 image:
-  # Example name: harbor.k8s-sandbox.org/project_name/image_name
+  # Example name: registry.domain.tld/project_name/image_name
   name: OVERRIDE-ME
   tag: OVERRIDE-ME
   # Image pull policy, permitted values: Always | IfNotPresent

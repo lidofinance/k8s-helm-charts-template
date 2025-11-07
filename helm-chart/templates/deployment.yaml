@@ -35,8 +35,15 @@ spec:
           image: "{{ coalesce ($c.image.name | default $.Values.image.name) }}:{{ default $.Values.image.tag $c.image.tag }}"
           imagePullPolicy: {{ default "Always" $c.imagePullPolicy }}
           securityContext:
+            runAsNonRoot: true
             privileged: false
             allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+            appArmorProfile:
+              type: RuntimeDefault
             readOnlyRootFilesystem: {{ default $.Values.securityContext.readOnlyRootFilesystem (and $c.securityContext $c.securityContext.readOnlyRootFilesystem) }}
             {{- with $c.securityContext }}
             {{- with .runAsUser }}
