@@ -141,6 +141,14 @@ Default security context settings:
 - runAsGroup: 65534
 - fsGroup: 65534
 - readOnlyRootFilesystem: true (controls whether the container's root filesystem is mounted as read-only)
+- runAsNonRoot: true (force non-root user)
+- allowPrivilegeEscalation: false (block `setuid` or `sudo` actions)
+- capabilities: 
+    drop: ["ALL"] (drop all capabilities)
+- seccompProfile:
+    type: RuntimeDefault (default seccomp profile)
+- appArmorProfile:
+    type: RuntimeDefault (default apparmor profile)
 
 ## Customization
 
