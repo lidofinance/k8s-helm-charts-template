@@ -122,7 +122,7 @@ PersistentVolumeClaim is disabled by default. To enable it:
 
 ### Read-only root file system
 
-Please keep in mind that `readOnlyRootFilesystem: true` is forced in the demployment template. So if your contianers need read-write access to some directories (e.g. cache or temp files) you need to mount them separately, please see values.yaml for examples.
+Please keep in mind that `readOnlyRootFilesystem: true` will be enforced in the future. So if your contianers need read-write access to some directories (e.g. cache or temp files) you need to mount them separately, please see values.yaml for examples.
 
 ### Ingress
 

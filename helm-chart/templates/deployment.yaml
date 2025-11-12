@@ -45,7 +45,7 @@ spec:
               type: RuntimeDefault
             appArmorProfile:
               type: RuntimeDefault
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: {{ default $.Values.securityContext.readOnlyRootFilesystem (and $c.securityContext $c.securityContext.readOnlyRootFilesystem) }}
             {{- with $c.securityContext }}
             {{- with .runAsUser }}
             runAsUser: {{ . }}

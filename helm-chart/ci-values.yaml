@@ -10,6 +10,8 @@ securityContext:
   runAsUser: 1000
   runAsGroup: 1000
   fsGroup: 1000
+  # Delete this line after initial migration (SRE-3261)
+  readOnlyRootFilesystem: true
 serviceAccount:
   name: test-sa
 image:
