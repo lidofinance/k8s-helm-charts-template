@@ -70,8 +70,11 @@ tests:
           path: spec.template.spec.securityContext.fsGroup
           value: 1000
       - equal:
+          path: spec.template.spec.securityContext.fsGroupChangePolicy
+          value: OnRootMismatch
+      - equal:
           path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
-          value: false
+          value: true
       - equal:
           path: spec.template.spec.containers[0].securityContext.runAsNonRoot
           value: true

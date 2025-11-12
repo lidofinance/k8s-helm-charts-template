@@ -28,6 +28,7 @@ spec:
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         {{- if .Values.containers }}
         {{- range $i, $c := .Values.containers }}
@@ -44,7 +45,7 @@ spec:
               type: RuntimeDefault
             appArmorProfile:
               type: RuntimeDefault
-            readOnlyRootFilesystem: {{ default $.Values.securityContext.readOnlyRootFilesystem (and $c.securityContext $c.securityContext.readOnlyRootFilesystem) }}
+            readOnlyRootFilesystem: true
             {{- with $c.securityContext }}
             {{- with .runAsUser }}
             runAsUser: {{ . }}
@@ -52,7 +53,8 @@ spec:
             {{- with .runAsGroup }}
             runAsGroup: {{ . }}
             {{- end }}
-            {{- end }}          {{- with $c.resources }}
+            {{- end }}
+          {{- with $c.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- else }}
@@ -77,7 +79,7 @@ spec:
           {{- end }}
         {{- end }}
         {{- end }}
-      {{- if and .Values.volumes .Values.pvc.enabled }}
+      {{- if .Values.volumes }}
       volumes:
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}

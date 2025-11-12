@@ -120,6 +120,10 @@ PersistentVolumeClaim is disabled by default. To enable it:
 1. Set `pvc.enabled` to `true`
 2. Set list of PVCs with params under the `pvcs` value.
 
+### Read-only root file system
+
+Please keep in mind that `readOnlyRootFilesystem: true` is forced in the demployment template. So if your contianers need read-write access to some directories (e.g. cache or temp files) you need to mount them separately, please see values.yaml for examples.
+
 ### Ingress
 
 Ingress is disabled by default. To enable it:
@@ -140,10 +144,11 @@ Default security context settings:
 - runAsUser: 65534
 - runAsGroup: 65534
 - fsGroup: 65534
+- fsGroupChangePolicy: OnRootMismatch
 - readOnlyRootFilesystem: true (controls whether the container's root filesystem is mounted as read-only)
 - runAsNonRoot: true (force non-root user)
 - allowPrivilegeEscalation: false (block `setuid` or `sudo` actions)
-- capabilities: 
+- capabilities:
     drop: ["ALL"] (drop all capabilities)
 - seccompProfile:
     type: RuntimeDefault (default seccomp profile)
@@ -171,8 +176,6 @@ helm install lido-app lido-artifactory/lido-app-template --version 0.0.1 --value
 
 # Future Improvements
 
-- [ ] Add unit tests (helm-unittest)
-- [ ] Add CI/CD pipeline for automated testing
 - [ ] Implement automated version bumping (bumpversion)
 - [ ] Implement automated documentation updates (helm-docs)
 - [ ] Add support for multiple environments (dev, staging, prod)

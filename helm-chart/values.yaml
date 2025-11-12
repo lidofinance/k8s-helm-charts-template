@@ -40,7 +40,6 @@ securityContext:
   runAsUser: 65534
   runAsGroup: 65534
   fsGroup: 65534
-  readOnlyRootFilesystem: true
 
 serviceAccount:
   name: default
@@ -106,6 +105,9 @@ pvc:
 #   - name: app-shared
 #     persistentVolumeClaim:
 #       claimName: app-shared
+# For rw directories
+#   - name: cache
+#     emptydir: {}
 
 # Ingress configuration enable if you need to expose the service to the outside world
 ingress:
@@ -156,3 +158,5 @@ containers:
     # volumeMounts:
     #   - name: app-shared
     #     mountPath: /storage/shared
+    #   - name: cache
+    #     mountPath: /var/cache/nginx
