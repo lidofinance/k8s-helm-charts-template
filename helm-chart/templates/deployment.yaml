@@ -21,6 +21,10 @@ spec:
     metadata:
       labels:
         {{- include "specific.labels" . | nindent 8 }}
+      {{- if .Values.openbao.enabled }}
+      annotations:
+        {{- toYaml .Values.openbao.annotations | nindent 8 }}
+      {{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
