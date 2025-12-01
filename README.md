@@ -62,6 +62,7 @@ The following table lists the configurable parameters of the chart and their def
 | `replicas`                      | Number of replicas                  | `1`                      |
 | `maxSurge`                      | Max surge for deployment            | `1`                      |
 | `maxUnavailable`                | Max unavailable for deployment      | `1`                      |
+| `minAvailable`                  | Max available for deployment        | `1`                      |
 | `image.name`                    | Container registry/image            | `OVERRIDE-ME`            |
 | `image.tag`                     | Container image tag                 | `OVERRIDE-ME`            |
 | `image.pullPolicy`              | Image pull policy                   | `IfNotPresent`           |
@@ -104,6 +105,9 @@ Prometheus monitoring is enabled by default with the following features:
 Pod Disruption Budget is enabled by default with:
 
 - maxUnavailable: 1
+- minAvailable: 1
+
+It should be configured on a per-app per-env basis. For example apps in critical should probably have minAvailable >=1. But there are some exceptions like singlton apps.
 
 ### Horizontal Pod Autoscaler
 
@@ -122,7 +126,7 @@ PersistentVolumeClaim is disabled by default. To enable it:
 
 ### Read-only root file system
 
-Please keep in mind that `readOnlyRootFilesystem: true` will be enforced in the future. So if your containers need read-write access to some directories (e.g. cache or temp files) you need to mount them separately, please see values.yaml for examples.
+Please keep in mind that `readOnlyRootFilesystem: true` will be enforced in the future. So if your contianers need read-write access to some directories (e.g. cache or temp files) you need to mount them separately, please see values.yaml for examples.
 
 ### Ingress
 

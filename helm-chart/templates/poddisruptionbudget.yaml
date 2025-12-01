@@ -7,6 +7,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   maxUnavailable: {{ .Values.PodDisruptionBudget.maxUnavailable }}
+  minAvailable: {{ .Values.PodDisruptionBudget.minAvailable }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ .Values.name }}
