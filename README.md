@@ -17,6 +17,7 @@ The template includes pre-configured settings for:
 - Service Monitor for Prometheus
 - Security Context configurations
 - Persistent Volume Claims for storage
+- OpenBao (Vault) Agent Injector for secret management
 
 ## Prerequisites
 
@@ -76,6 +77,8 @@ The following table lists the configurable parameters of the chart and their def
 | `pvcs`                          | List of PVCs, see values.yaml       | See values.yaml          |
 | `containers`                    | List of containers with params      | See values.yaml          |
 | `servicemonitor.endpoints`      | List of ServiceMonitors             | See values.yaml          |
+| `openbao.enabled`               | Enable OpenBao secret injection     | `false`                  |
+| `openbao.annotations`           | OpenBao agent annotations           | `{}`                     |
 
 ### Health Checks
 
@@ -140,6 +143,69 @@ Ingress is disabled by default. To enable it:
 ### Containers
 
 The template supports multiple containers within one Pod. You can set a list of containers under the `cotainers` value with their own name, image, tags, probes, volumes, etc. See values.yaml for examples.
+
+### OpenBao (Vault) Secret Injection
+
+OpenBao Agent Injector is disabled by default. To enable it:
+
+1. Set `openbao.enabled` to `true`
+2. Configure annotations in the `openbao.annotations` section
+
+**Example configuration:**
+
+```yaml
+openbao:
+  enabled: true
+  annotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "<TEAMNAME>-team-ro"
+    vault.hashicorp.com/agent-inject-secret-app: "secret/data/<TEAMNAME>-team/<APPNAME>-app/<SECRETS>"
+    vault.hashicorp.com/agent-pre-populate: "true"
+    vault.hashicorp.com/template-static-secret-render-interval: "30s"
+    vault.hashicorp.com/agent-inject-template-app: |
+      {{`{{- with secret "secret/data/<TEAMNAME>-team/<APPNAME>-app/<SECRETS>" -}}`}}
+      {{`{{- range $k, $v := .Data.data -}}`}}
+      {{`export `}}{{`{{ $k }}`}}{{`="{{ $v }}"`}}
+      {{`{{ end -}}`}}
+      {{`{{- end -}}`}}
+```
+
+**Using secrets in your container:**
+
+```yaml
+containers:
+  - name: my-app
+    image:
+      name: nginx
+      tag: 1.29.3
+    command: ["/bin/bash", "-c"]
+    args:
+      - |
+        set -euo pipefail
+        # Wait for secrets to be injected
+        while [ ! -f /vault/secrets/app ]; do
+          sleep 0.1
+        done
+
+        # Load secrets as environment variables
+        . /vault/secrets/app
+
+        # Start your application
+        exec nginx -g 'daemon off;'
+```
+
+**Optional: Reload application on secret update**
+
+To reload your application when secrets are updated, add the reload command annotation:
+
+```yaml
+openbao:
+  enabled: true
+  annotations:
+    # ... other annotations ...
+    vault.hashicorp.com/agent-inject-command-app: |
+      kill -HUP $(pidof nginx)
+```
 
 ### Security Context
 

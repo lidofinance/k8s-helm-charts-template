@@ -46,6 +46,28 @@ securityContext:
 serviceAccount:
   name: default
 
+# OpenBao configuration for secret injection
+openbao:
+  enabled: false
+  annotations: {}
+  # Example OpenBao configuration:
+  # enabled: true
+  # annotations:
+  #   vault.hashicorp.com/agent-inject: "true"
+  #   vault.hashicorp.com/role: "<TEAMNAME>-team-ro"
+  #   vault.hashicorp.com/agent-inject-secret-app: "secret/data/<TEAMNAME>-team/<APPNAME>-app/<SECRETS>"
+  #   vault.hashicorp.com/agent-pre-populate: "true"
+  #   vault.hashicorp.com/template-static-secret-render-interval: "30s"
+  #   vault.hashicorp.com/agent-inject-template-app: |
+  #     {{`{{- with secret "secret/data/<TEAMNAME>-team/<APPNAME>-app/<SECRETS>" -}}`}}
+  #     {{`{{- range $k, $v := .Data.data -}}`}}
+  #     {{`export `}}{{`{{ $k }}`}}{{`="{{ $v }}"`}}
+  #     {{`{{ end -}}`}}
+  #     {{`{{- end -}}`}}
+  # Optional: Command to reload application after secrets update
+  #   vault.hashicorp.com/agent-inject-command-app: |
+  #     kill -HUP $(pidof nginx)
+
 # Not uses need implement
 
 # podAnnotations: {}
