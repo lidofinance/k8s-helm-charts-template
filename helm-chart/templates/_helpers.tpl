@@ -8,6 +8,9 @@ helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
 {{- define "specific.labels" -}}
 app.kubernetes.io/name: {{ .Values.name }}
 app.kubernetes.io/component: {{ coalesce .Values.component .Values.name }}
+team: {{ .Values.team }}
+app: {{ .Values.name }}
+env: {{ .Values.env }}
 {{ include "common.labels" . }}
 {{- end -}}
 
