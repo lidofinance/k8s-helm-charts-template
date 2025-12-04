@@ -1,4 +1,6 @@
 name: OVERRIDE-ME
+team: OVERRIDE-ME
+env: OVERRIDE-ME
 
 # Replica count for default deployment
 replicas: 1

@@ -1,4 +1,6 @@
 name: test-app
+team: test-team
+env: test-env
 
 deployment:
   enabled: true
