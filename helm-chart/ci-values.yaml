@@ -74,7 +74,6 @@ ingress:
 PodDisruptionBudget:
   enabled: true
   maxUnavailable: 2
-  minAvailable: 1
 
 HorizontalPodAutoscaler:
   enabled: true
