@@ -1,4 +1,6 @@
 name: OVERRIDE-ME
+team: OVERRIDE-ME
+env: OVERRIDE-ME
 
 # Replica count for default deployment
 replicas: 1
@@ -18,8 +20,9 @@ deployment:
 
 PodDisruptionBudget:
   enabled: true
+  # Can only set either maxUnavailable or minAvailable, not both
   maxUnavailable: 1
-  minAvailable: 1
+  # minAvailable: 1
 
 HorizontalPodAutoscaler:
   enabled: true

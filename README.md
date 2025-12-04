@@ -108,9 +108,8 @@ Prometheus monitoring is enabled by default with the following features:
 Pod Disruption Budget is enabled by default with:
 
 - maxUnavailable: 1
-- minAvailable: 1
 
-It should be configured on a per-app per-env basis. For example apps in critical should probably have minAvailable >=1. But there are some exceptions like singlton apps.
+It should be configured on a per-app per-env basis. For example apps in critical should probably have minAvailable >=1. But there are some exceptions like singlton apps. Keep in mind that you can't set up both maxUnavailable and minAvailable.
 
 ### Horizontal Pod Autoscaler
 

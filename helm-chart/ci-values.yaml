@@ -1,4 +1,6 @@
 name: test-app
+team: test-team
+env: test-env
 
 deployment:
   enabled: true
@@ -74,7 +76,6 @@ ingress:
 PodDisruptionBudget:
   enabled: true
   maxUnavailable: 2
-  minAvailable: 1
 
 HorizontalPodAutoscaler:
   enabled: true

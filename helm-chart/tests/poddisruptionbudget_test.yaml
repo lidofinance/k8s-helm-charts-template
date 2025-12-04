@@ -30,8 +30,5 @@ tests:
           path: spec.maxUnavailable
           value: 2
       - equal:
-          path: spec.minAvailable
-          value: 1
-      - equal:
           path: spec.selector.matchLabels["app.kubernetes.io/name"]
           value: test-app
