@@ -240,7 +240,20 @@ image:
 Then install using:
 
 ```bash
-helm install lido-app lido-artifactory/lido-app-template --version 0.0.1 --values lido_app_value.yaml
+helm install lido-app oci://ghcr.io/lidofinance/helm-charts --version 1.3.6 --values lido_app_value.yaml
+```
+
+Installation as a helm dependency(`Chart.yaml` example):
+```yaml
+apiVersion: v2
+name: lido-app
+version: 1.0.0
+type: application
+dependencies:
+  - name: k8s-helm-charts-template
+    alias: overrides
+    version: 1.3.6
+    repository: "oci://ghcr.io/lidofinance/helm-charts"
 ```
 
 # Future Improvements

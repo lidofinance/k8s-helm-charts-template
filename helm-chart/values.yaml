@@ -134,7 +134,8 @@ pvc:
 #       claimName: app-shared
 # For rw directories
 #   - name: cache
-#     emptydir: {}
+#     emptyDir:
+#       sizeLimit: 100Mi
 
 # Ingress configuration enable if you need to expose the service to the outside world
 ingress:

@@ -62,7 +62,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: | 
+          body: |
             ${{ env.commit_message }}
 
             SHA256 checksum of the Helm chart:
@@ -79,3 +79,13 @@ jobs:
           asset_path: ./dist/k8s-helm-charts-template-${{ env.CHART_VERSION }}.tgz
           asset_name: k8s-helm-charts-template-${{ env.CHART_VERSION }}.tgz
           asset_content_type: application/gzip
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+          helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
+
+      - name: Push chart to GHCR (OCI)
+        run: |
+          CHART_TGZ=$(ls ./dist/*.tgz | head -n 1)
+          helm push "$CHART_TGZ" oci://ghcr.io/${{ github.repository_owner }}/helm-charts
