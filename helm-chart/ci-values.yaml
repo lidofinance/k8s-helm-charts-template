@@ -109,3 +109,5 @@ containers:
     volumeMounts:
       - name: /data
         mountPath: /data
+    env:
+      FEATURE_X_ENABLED: "true"

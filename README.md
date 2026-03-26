@@ -141,7 +141,7 @@ Ingress is disabled by default. To enable it:
 
 ### Containers
 
-The template supports multiple containers within one Pod. You can set a list of containers under the `cotainers` value with their own name, image, tags, probes, volumes, etc. See values.yaml for examples.
+The template supports multiple containers within one Pod. You can set a list of containers under the `cotainers` value with their own name, image, env, tags, probes, volumes, etc. See values.yaml for examples.
 
 ### OpenBao (Vault) Secret Injection
 
