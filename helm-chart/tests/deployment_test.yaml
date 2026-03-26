@@ -156,8 +156,7 @@ tests:
           value: 2
       # ───────────────── env ─────────────────
       - equal:
-          path: spec.template.spec.containers[0].env[0].name
-          value: FEATURE_X_ENABLED
-      - equal:
-          path: spec.template.spec.containers[0].env[0].value
-          value: "true"
+          path: spec.template.spec.containers[0].env
+          content:
+            name: FEATURE_X_ENABLED
+            value: "true"
