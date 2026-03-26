@@ -154,3 +154,10 @@ tests:
       - equal:
           path: spec.strategy.rollingUpdate.maxUnavailable
           value: 2
+      # ───────────────── env ─────────────────
+      - equal:
+          path: spec.template.spec.containers[0].env[0].name
+          value: FEATURE_X_ENABLED
+      - equal:
+          path: spec.template.spec.containers[0].env[0].value
+          value: "true"
