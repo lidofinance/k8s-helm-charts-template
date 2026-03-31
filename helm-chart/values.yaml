@@ -159,6 +159,10 @@ containers:
     image:
       name: OVERRIDE-ME
       tag: OVERRIDE-ME
+    # command: ["/bin/bash", "-c"]
+    # args:
+    #   - |
+    #     exec nginx -g 'daemon off;'
     startupProbe:
       httpGet:
         path: /healthz
