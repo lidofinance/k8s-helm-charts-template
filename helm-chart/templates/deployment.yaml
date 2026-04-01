@@ -39,13 +39,13 @@ spec:
         - name: {{ default $.Values.name $c.name }}
           image: "{{ coalesce ($c.image.name | default $.Values.image.name) }}:{{ default $.Values.image.tag $c.image.tag }}"
           imagePullPolicy: {{ default "Always" $c.imagePullPolicy }}
-          {{- with $c.command }}
+          {{- if hasKey $c "command" }}
           command:
-            {{- toYaml . | nindent 12 }}
+            {{- toYaml (index $c "command") | nindent 12 }}
           {{- end }}
-          {{- with $c.args }}
+          {{- if hasKey $c "args" }}
           args:
-            {{- toYaml . | nindent 12 }}
+            {{- toYaml (index $c "args") | nindent 12 }}
           {{- end }}
           securityContext:
             runAsNonRoot: true

@@ -1,0 +1,18 @@
+suite: Test Deployment template empty command and args rendering
+templates:
+  - templates/deployment.yaml
+values:
+  - empty_command_args_values.yaml
+release:
+  namespace: test-namespace
+tests:
+  - it: should render empty command and args when explicitly provided
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].command
+          value: []
+      - equal:
+          path: spec.template.spec.containers[0].args
+          value: []

@@ -1,0 +1,11 @@
+name: test-app
+team: test-team
+env: test-env
+
+containers:
+  - name: container-1
+    image:
+      name: docker.io/test-image
+      tag: v1.0.0
+    command: []
+    args: []
