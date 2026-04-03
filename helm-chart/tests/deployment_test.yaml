@@ -14,10 +14,12 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
   - it: should render deployment with values from ci-values.yaml
     asserts:
       - isKind:
           of: Deployment
+
       # ─────────────── metadata ───────────────
       - equal:
           path: metadata.name
@@ -51,14 +53,27 @@ tests:
           path: spec.template.spec.containers[0].name
           value: container-1
 
+      # ─────────────── command ───────────────
+      - equal:
+          path: spec.template.spec.containers[0].command[0]
+          value: /bin/sh
+      - equal:
+          path: spec.template.spec.containers[0].command[1]
+          value: -ec
+      - equal:
+          path: spec.template.spec.containers[0].command[2]
+          value: . /vault/secrets/app && exec /app/start.sh
+
       # ─────────────── serviceAccount ───────────────
       - equal:
           path: spec.template.spec.serviceAccountName
           value: test-sa
+
       # ─────────────── termination period ───────────────
       - equal:
           path: spec.template.spec.terminationGracePeriodSeconds
           value: 40
+
       # ─────────────── security context ───────────────
       - equal:
           path: spec.template.spec.securityContext.runAsUser
@@ -90,6 +105,7 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].securityContext.appArmorProfile.type
           value: RuntimeDefault
+
       # ─────────────── resources ───────────────
       - equal:
           path: spec.template.spec.containers[0].resources.limits.cpu
@@ -103,6 +119,7 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].resources.requests.memory
           value: "64Mi"
+
       # ─────────────── probes ───────────────
       - equal:
           path: spec.template.spec.containers[0].startupProbe.httpGet.path
@@ -140,13 +157,18 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].livenessProbe.periodSeconds
           value: 5
+
       # ─────────────── volumes ───────────────
       - equal:
           path: spec.template.spec.volumes[0].name
           value: data
       - equal:
           path: spec.template.spec.containers[0].volumeMounts[0].name
+          value: data
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].mountPath
           value: /data
+
       # ─────────────── strategy ───────────────
       - equal:
           path: spec.strategy.rollingUpdate.maxSurge
@@ -154,9 +176,10 @@ tests:
       - equal:
           path: spec.strategy.rollingUpdate.maxUnavailable
           value: 2
+
       # ───────────────── env ─────────────────
       - exists:
-        path: spec.template.spec.containers[0].env
+          path: spec.template.spec.containers[0].env
       - contains:
           path: spec.template.spec.containers[0].env
           content:

@@ -180,6 +180,10 @@ containers:
       periodSeconds: 3
     env:
       FEATURE_X_ENABLED: "true"
+    # command:
+    #   - /bin/sh
+    #   - -ec
+    #   - . /vault/secrets/app && exec /app/start.sh
     # imagePullPolicy: Always
     # resources:
     #   requests:

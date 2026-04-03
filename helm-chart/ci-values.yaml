@@ -6,18 +6,23 @@ deployment:
   enabled: true
   annotations:
     custom-annotation: "true"
+
 replicas: 3
 terminationGracePeriodSeconds: 40
+
 securityContext:
   runAsUser: 1000
   runAsGroup: 1000
   fsGroup: 1000
   readOnlyRootFilesystem: true
+
 serviceAccount:
   name: test-sa
+
 image:
   name: docker.io/test-image
   tag: v1.2.3
+
 resources:
   limits:
     cpu: "500m"
@@ -25,6 +30,7 @@ resources:
   requests:
     cpu: "250m"
     memory: "64Mi"
+
 maxSurge: 2
 maxUnavailable: 2
 
@@ -48,12 +54,13 @@ servicemonitor:
 
 pvc:
   enabled: true
+
 pvcs:
   - name: data
     accessModes:
       - ReadWriteOnce
     size: 100Mi
-    storageClass: "longhorn-standard"
+    storageClass: longhorn-standard
 
 volumes:
   - name: data
@@ -88,6 +95,10 @@ containers:
     image:
       name: docker.io/test-image
       tag: v1.3.0
+    command:
+      - /bin/sh
+      - -ec
+      - . /vault/secrets/app && exec /app/start.sh
     startupProbe:
       httpGet:
         path: /healthz
@@ -107,7 +118,7 @@ containers:
       failureThreshold: 2
       periodSeconds: 5
     volumeMounts:
-      - name: /data
+      - name: data
         mountPath: /data
     env:
       FEATURE_X_ENABLED: "true"
