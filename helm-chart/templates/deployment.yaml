@@ -36,8 +36,10 @@ spec:
       containers:
         {{- if .Values.containers }}
         {{- range $i, $c := .Values.containers }}
+        {{- $imageName := coalesce ($c.image.name | default $.Values.image.name) }}
+        {{- $imageTag := default $.Values.image.tag $c.image.tag }}
         - name: {{ default $.Values.name $c.name }}
-          image: "{{ coalesce ($c.image.name | default $.Values.image.name) }}:{{ default $.Values.image.tag $c.image.tag }}"
+          image: {{ if regexMatch "^sha256:[a-fA-F0-9]{64}$" ($imageTag | toString) }}{{ printf "%s@%s" $imageName ($imageTag | toString) | quote }}{{ else }}{{ printf "%s:%s" $imageName ($imageTag | toString) | quote }}{{ end }}
           imagePullPolicy: {{ default "Always" $c.imagePullPolicy }}
           securityContext:
             runAsNonRoot: true
