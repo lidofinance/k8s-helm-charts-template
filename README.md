@@ -76,6 +76,7 @@ The following table lists the configurable parameters of the chart and their def
 | `pvc.enabled`                   | Enable or disable PVC               | `false`                  |
 | `pvcs`                          | List of PVCs, see values.yaml       | See values.yaml          |
 | `containers`                    | List of containers with params      | See values.yaml          |
+| `containers[].command`          | Override container entrypoint       | `nil`                    |
 | `servicemonitor.endpoints`      | List of ServiceMonitors             | See values.yaml          |
 | `openbao.enabled`               | Enable OpenBao secret injection     | `false`                  |
 | `openbao.annotations`           | OpenBao agent annotations           | `{}`                     |
@@ -128,7 +129,7 @@ PersistentVolumeClaim is disabled by default. To enable it:
 
 ### Read-only root file system
 
-Please keep in mind that `readOnlyRootFilesystem: true` will be enforced in the future. So if your contianers need read-write access to some directories (e.g. cache or temp files) you need to mount them separately, please see values.yaml for examples.
+Please keep in mind that `readOnlyRootFilesystem: true` will be enforced in the future. So if your containers need read-write access to some directories (e.g. cache or temp files) you need to mount them separately, please see values.yaml for examples.
 
 ### Ingress
 
@@ -141,7 +142,21 @@ Ingress is disabled by default. To enable it:
 
 ### Containers
 
-The template supports multiple containers within one Pod. You can set a list of containers under the `cotainers` value with their own name, image, env, tags, probes, volumes, etc. See values.yaml for examples.
+The template supports multiple containers within one Pod. You can set a list of containers under the `containers` value with their own name, image, env, tags, probes, volumes, etc. See values.yaml for examples.
+
+You can also override the container entrypoint using `command` (Kubernetes equivalent of Docker ENTRYPOINT):
+
+```yaml
+containers:
+  - name: my-app
+    image:
+      name: nginx
+      tag: 1.29.3
+    command:
+      - /bin/sh
+      - -ec
+      - echo "Hello world" && exec nginx -g 'daemon off;'
+```
 
 ### OpenBao (Vault) Secret Injection
 
