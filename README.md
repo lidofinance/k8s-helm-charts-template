@@ -271,7 +271,7 @@ image:
 Then install using:
 
 ```bash
-helm install lido-app oci://ghcr.io/lidofinance/helm-charts --version 1.3.6 --values lido_app_value.yaml
+helm install lido-app oci://ghcr.io/lidofinance/helm-charts --version 1.3.9 --values lido_app_value.yaml
 ```
 
 Installation as a helm dependency(`Chart.yaml` example):
@@ -283,9 +283,12 @@ type: application
 dependencies:
   - name: k8s-helm-charts-template
     alias: overrides
-    version: 1.3.6
+    version: 1.3.9
     repository: "oci://ghcr.io/lidofinance/helm-charts"
 ```
+
+Published charts from this repository should follow the repository release tag version, for example `1.3.9`.
+Team charts created from these templates in `helm-charts-*` repositories remain independent charts and can keep their own local version such as `1.0.0`.
 
 ## Grafana Dashboards Template
 
