@@ -300,22 +300,35 @@ This matches the existing Grafana sidecar configuration in `k8s-infra/l2`, so Ar
 
 Dashboard files live under `dashboards/`. Existing JSON dashboards from the old non-Kubernetes alerts-box layout can be copied there as-is and then referenced from values.
 
+The values shape matches the monitoring charts already used in `helm-charts-csm`, `helm-charts-qa`, and `helm-charts-infra`.
+
+To reduce boilerplate, the template also provides safe defaults:
+
+- `name` defaults to `grafana-dashboard-<file basename without .json>`
+- `namespace` defaults to the Helm release namespace
+- `fileKey` defaults to the dashboard file basename
+- `labels.grafana_dashboard` defaults to `"1"`
+- `annotations.grafana_folder` defaults to `Custom`
+
 Example values:
 
 ```yaml
-dashboards:
-  - file: dashboards/application-overview.json
-  - file: dashboards/redis.json
-    folder: Redis
+configmapsFromFiles:
+  - filePath: dashboards/application-overview.json
 ```
-
-If `namespaceOverride` is empty, ConfigMaps are created in the Helm release namespace.
 
 ## Prometheus Alerts Template
 
 Use `alerts/` to create charts such as `csm-alerts` in the team `helm-charts-*` repositories.
 
 Alert rule files live under `files/` and must contain the `PrometheusRule.spec` payload starting with `groups:`. Existing alert files from the old infra layout can be moved here after adapting expressions and labels to the Kubernetes metrics model.
+
+The values shape matches the current team alerts charts.
+
+To reduce boilerplate, the template also provides safe defaults:
+
+- `name` defaults to the alert file basename without `.yaml` or `.rule.yaml`
+- `namespace` defaults to the Helm release namespace
 
 Example values:
 
@@ -324,7 +337,7 @@ alertRules:
   - file: files/example-alert.yaml
 ```
 
-If `namespaceOverride` is empty, `PrometheusRule` resources are created in the Helm release namespace. Team Prometheus stacks already discover rules from namespaces labeled with `app.kubernetes.io/team`, which is how the current `k8s-infra/l2` setup scopes team monitoring.
+Team Prometheus stacks discover these rules from namespaces labeled with `app.kubernetes.io/team`, which is how the current `k8s-infra/l2` setup scopes team monitoring.
 
 ## ArgoCD
 

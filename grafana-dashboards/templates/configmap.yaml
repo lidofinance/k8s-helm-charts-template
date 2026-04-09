@@ -1,40 +1,32 @@
 {{- $root := . }}
-{{- range $dashboard := .Values.dashboards }}
-{{- $filePath := required "dashboards[].file is required" $dashboard.file }}
+{{- range $configmap := .Values.configmapsFromFiles }}
+{{- $filePath := required "configmapsFromFiles[].filePath is required" $configmap.filePath }}
 {{- $fileName := base $filePath }}
-{{- $dashboardName := default (printf "grafana-dashboard-%s" (regexReplaceAll "\\.json$" $fileName "")) $dashboard.name }}
-{{- $namespace := coalesce $dashboard.namespace $root.Values.namespaceOverride $root.Release.Namespace }}
-{{- $labels := dict
-      "app.kubernetes.io/name" $root.Chart.Name
-      "app.kubernetes.io/instance" $root.Release.Name
-      "app.kubernetes.io/managed-by" $root.Release.Service
-      "helm.sh/chart" (printf "%s-%s" $root.Chart.Name ($root.Chart.Version | replace "+" "_"))
-      "grafana_dashboard" "1"
-}}
-{{- with $root.Values.commonLabels }}
+{{- $name := default (printf "grafana-dashboard-%s" (regexReplaceAll "\\.json$" $fileName "")) $configmap.name }}
+{{- $namespace := default $root.Release.Namespace $configmap.namespace }}
+{{- $labels := dict "grafana_dashboard" "1" }}
+{{- with $configmap.labels }}
 {{- $labels = mergeOverwrite $labels . }}
 {{- end }}
-{{- with $dashboard.labels }}
-{{- $labels = mergeOverwrite $labels . }}
-{{- end }}
-{{- $annotations := dict "grafana_folder" (default $root.Values.defaultFolder $dashboard.folder) }}
-{{- with $root.Values.commonAnnotations }}
-{{- $annotations = mergeOverwrite $annotations . }}
-{{- end }}
-{{- with $dashboard.annotations }}
+{{- $annotations := dict "grafana_folder" $root.Values.defaultFolder }}
+{{- with $configmap.annotations }}
 {{- $annotations = mergeOverwrite $annotations . }}
 {{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $dashboardName }}
+  name: {{ $name }}
   namespace: {{ $namespace }}
   labels:
-{{ $labels | toYaml | nindent 4 }}
+    {{- range $k, $v := $labels }}
+    {{ $k }}: {{ $v | quote }}
+    {{- end }}
   annotations:
-{{ $annotations | toYaml | nindent 4 }}
+    {{- range $k, $v := $annotations }}
+    {{ $k }}: {{ $v | quote }}
+    {{- end }}
 data:
-  {{ default $fileName $dashboard.fileKey }}: |
+  {{ default $fileName $configmap.fileKey }}: |
 {{ $root.Files.Get $filePath | nindent 4 }}
 ---
 {{- end }}

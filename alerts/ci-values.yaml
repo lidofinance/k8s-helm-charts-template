@@ -1,8 +1,5 @@
-commonLabels:
-  app.kubernetes.io/team: test-team
-
-commonAnnotations:
-  lido.fi/maintainer: Test Team <test@lido.fi>
-
 alertRules:
   - file: files/example-alert.yaml
+  - name: explicit-alert
+    namespace: custom-namespace
+    file: files/example-alert.yaml

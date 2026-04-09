@@ -1,22 +1,15 @@
 defaultFolder: Custom
 
-# If empty, dashboards are created in the Helm release namespace.
-namespaceOverride: ""
-
-commonLabels: {}
-
-commonAnnotations: {}
-
-dashboards: []
+configmapsFromFiles: []
 # Example:
-# dashboards:
-#   - file: dashboards/example-dashboard.json
+# configmapsFromFiles:
+#   - filePath: dashboards/example-dashboard.json
 #     # Optional overrides:
 #     # name: grafana-dashboard-example-dashboard
-#     # fileKey: example-dashboard.json
 #     # namespace: team-csm
-#     # folder: CSM
+#     # fileKey: example-dashboard.json
 #     # labels:
-#     #   app.kubernetes.io/component: example-app
+#     #   grafana_dashboard: "1"
 #     # annotations:
-#     #   lido.fi/maintainer: Full name <team@lido.fi>
+#     #   grafana_folder: CSM
+#     filePath: dashboards/example-dashboard.json

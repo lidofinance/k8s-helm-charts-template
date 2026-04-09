@@ -9,12 +9,12 @@ release:
 tests:
   - it: should not render configmaps when dashboards are not configured
     set:
-      dashboards: []
+      configmapsFromFiles: []
     asserts:
       - hasDocuments:
           count: 0
 
-  - it: should render a Grafana dashboard configmap with defaults
+  - it: should render a Grafana dashboard configmap with derived defaults
     asserts:
       - isKind:
           of: ConfigMap
@@ -28,13 +28,30 @@ tests:
           path: metadata.labels.grafana_dashboard
           value: "1"
       - equal:
-          path: metadata.labels["app.kubernetes.io/team"]
+          path: metadata.annotations.grafana_folder
+          value: Custom
+      - exists:
+          path: data["example-dashboard.json"]
+
+  - it: should preserve explicit legacy fields
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.name
+          value: grafana-dashboard-explicit
+      - equal:
+          path: metadata.namespace
+          value: custom-namespace
+      - equal:
+          path: metadata.labels.grafana_dashboard
+          value: "1"
+      - equal:
+          path: metadata.labels.team
           value: test-team
       - equal:
           path: metadata.annotations.grafana_folder
-          value: Custom
-      - equal:
-          path: metadata.annotations["lido.fi/maintainer"]
-          value: Test Team <test@lido.fi>
+          value: Explicit
       - exists:
           path: data["example-dashboard.json"]

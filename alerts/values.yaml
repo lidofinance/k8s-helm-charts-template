@@ -1,18 +1,7 @@
-# If empty, PrometheusRule resources are created in the Helm release namespace.
-namespaceOverride: ""
-
-commonLabels: {}
-
-commonAnnotations: {}
-
 alertRules: []
 # Example:
 # alertRules:
 #   - file: files/example-alert.yaml
 #     # Optional overrides:
-#     # name: example-app-alerts
+#     # name: example-alert
 #     # namespace: team-csm
-#     # labels:
-#     #   app.kubernetes.io/component: example-app
-#     # annotations:
-#     #   lido.fi/maintainer: Full name <team@lido.fi>

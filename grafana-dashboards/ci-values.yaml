@@ -1,10 +1,10 @@
-defaultFolder: Custom
-
-commonLabels:
-  app.kubernetes.io/team: test-team
-
-commonAnnotations:
-  lido.fi/maintainer: Test Team <test@lido.fi>
-
-dashboards:
-  - file: dashboards/example-dashboard.json
+configmapsFromFiles:
+  - filePath: dashboards/example-dashboard.json
+  - name: grafana-dashboard-explicit
+    namespace: custom-namespace
+    labels:
+      grafana_dashboard: "1"
+      team: test-team
+    annotations:
+      grafana_folder: Explicit
+    filePath: dashboards/example-dashboard.json
