@@ -144,7 +144,7 @@ Ingress is disabled by default. To enable it:
 
 The template supports multiple containers within one Pod. You can set a list of containers under the `containers` value with their own name, image, env, tags, probes, volumes, etc. See values.yaml for examples.
 
-Use `env` for native Kubernetes `EnvVar` entries when you need `valueFrom`, ordering, or the same structure as a regular Deployment. For simple string key/value pairs, `envMap` is available as a compatibility shortcut.
+Use `env` for native Kubernetes `EnvVar` entries when you need `valueFrom`, ordering or the same structure as a regular Deployment. For simple string key/value pairs `envMap` is available as a compatibility shortcut.
 
 You can also override the container entrypoint using `command` (Kubernetes equivalent of Docker ENTRYPOINT):
 
