@@ -15,6 +15,7 @@ tests:
           count: 0
 
   - it: should render a PrometheusRule with derived defaults
+    documentIndex: 0
     asserts:
       - isKind:
           of: PrometheusRule
