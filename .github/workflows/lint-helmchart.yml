@@ -1,9 +1,11 @@
-name: Lint and test Helm Chart
+name: Lint and test Helm Charts
 
 on:
   push:
     paths:
       - 'helm-chart/**'
+      - 'alerts/**'
+      - 'grafana-dashboards/**'
       - '.github/workflows/*.yml'
 
 jobs:
@@ -36,6 +38,8 @@ jobs:
       - name: Run helm lint
         run: |
           helm lint helm-chart/
+          helm lint alerts/
+          helm lint grafana-dashboards/
 
       - name: Run chart-testing (list-changed)
         id: list-changed
@@ -52,3 +56,5 @@ jobs:
       - name: Run unit tests
         run: |
           helm unittest helm-chart
+          helm unittest alerts
+          helm unittest grafana-dashboards

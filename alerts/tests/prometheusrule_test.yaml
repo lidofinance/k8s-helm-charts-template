@@ -1,0 +1,38 @@
+suite: Test PrometheusRule template with CI values
+templates:
+  - templates/prometheusrule.yaml
+values:
+  - ../ci-values.yaml
+release:
+  name: test-alerts
+  namespace: team-test
+tests:
+  - it: should not render PrometheusRule resources when alertRules are not configured
+    set:
+      alertRules: []
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render a PrometheusRule with defaults
+    asserts:
+      - isKind:
+          of: PrometheusRule
+      - equal:
+          path: metadata.name
+          value: example-alert
+      - equal:
+          path: metadata.namespace
+          value: team-test
+      - equal:
+          path: metadata.labels["app.kubernetes.io/team"]
+          value: test-team
+      - equal:
+          path: metadata.annotations["lido.fi/maintainer"]
+          value: Test Team <test@lido.fi>
+      - equal:
+          path: spec.groups[0].name
+          value: example-app
+      - equal:
+          path: spec.groups[0].rules[0].alert
+          value: ExampleAppDown

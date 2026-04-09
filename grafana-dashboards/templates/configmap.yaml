@@ -1,0 +1,40 @@
+{{- $root := . }}
+{{- range $dashboard := .Values.dashboards }}
+{{- $filePath := required "dashboards[].file is required" $dashboard.file }}
+{{- $fileName := base $filePath }}
+{{- $dashboardName := default (printf "grafana-dashboard-%s" (regexReplaceAll "\\.json$" $fileName "")) $dashboard.name }}
+{{- $namespace := coalesce $dashboard.namespace $root.Values.namespaceOverride $root.Release.Namespace }}
+{{- $labels := dict
+      "app.kubernetes.io/name" $root.Chart.Name
+      "app.kubernetes.io/instance" $root.Release.Name
+      "app.kubernetes.io/managed-by" $root.Release.Service
+      "helm.sh/chart" (printf "%s-%s" $root.Chart.Name ($root.Chart.Version | replace "+" "_"))
+      "grafana_dashboard" "1"
+}}
+{{- with $root.Values.commonLabels }}
+{{- $labels = mergeOverwrite $labels . }}
+{{- end }}
+{{- with $dashboard.labels }}
+{{- $labels = mergeOverwrite $labels . }}
+{{- end }}
+{{- $annotations := dict "grafana_folder" (default $root.Values.defaultFolder $dashboard.folder) }}
+{{- with $root.Values.commonAnnotations }}
+{{- $annotations = mergeOverwrite $annotations . }}
+{{- end }}
+{{- with $dashboard.annotations }}
+{{- $annotations = mergeOverwrite $annotations . }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $dashboardName }}
+  namespace: {{ $namespace }}
+  labels:
+{{ $labels | toYaml | nindent 4 }}
+  annotations:
+{{ $annotations | toYaml | nindent 4 }}
+data:
+  {{ default $fileName $dashboard.fileKey }}: |
+{{ $root.Files.Get $filePath | nindent 4 }}
+---
+{{- end }}

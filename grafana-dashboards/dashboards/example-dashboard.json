@@ -1,0 +1,22 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "panels": [],
+  "schemaVersion": 39,
+  "tags": [
+    "template"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Example App Overview",
+  "uid": "example-app-overview",
+  "version": 1
+}

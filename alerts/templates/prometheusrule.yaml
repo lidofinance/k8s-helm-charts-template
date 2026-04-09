@@ -1,0 +1,39 @@
+{{- $root := . }}
+{{- range $rule := .Values.alertRules }}
+{{- $filePath := required "alertRules[].file is required" $rule.file }}
+{{- $ruleName := default (regexReplaceAll "\\.(rule\\.)?ya?ml$" (base $filePath) "") $rule.name }}
+{{- $namespace := coalesce $rule.namespace $root.Values.namespaceOverride $root.Release.Namespace }}
+{{- $labels := dict
+      "app.kubernetes.io/name" $root.Chart.Name
+      "app.kubernetes.io/instance" $root.Release.Name
+      "app.kubernetes.io/managed-by" $root.Release.Service
+      "helm.sh/chart" (printf "%s-%s" $root.Chart.Name ($root.Chart.Version | replace "+" "_"))
+}}
+{{- with $root.Values.commonLabels }}
+{{- $labels = mergeOverwrite $labels . }}
+{{- end }}
+{{- with $rule.labels }}
+{{- $labels = mergeOverwrite $labels . }}
+{{- end }}
+{{- $annotations := dict }}
+{{- with $root.Values.commonAnnotations }}
+{{- $annotations = mergeOverwrite $annotations . }}
+{{- end }}
+{{- with $rule.annotations }}
+{{- $annotations = mergeOverwrite $annotations . }}
+{{- end }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ $ruleName }}
+  namespace: {{ $namespace }}
+  labels:
+{{ $labels | toYaml | nindent 4 }}
+{{- if not (empty $annotations) }}
+  annotations:
+{{ $annotations | toYaml | nindent 4 }}
+{{- end }}
+spec:
+{{ $root.Files.Get $filePath | fromYaml | toYaml | nindent 2 }}
+---
+{{- end }}

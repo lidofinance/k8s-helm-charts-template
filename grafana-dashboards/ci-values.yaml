@@ -1,0 +1,10 @@
+defaultFolder: Custom
+
+commonLabels:
+  app.kubernetes.io/team: test-team
+
+commonAnnotations:
+  lido.fi/maintainer: Test Team <test@lido.fi>
+
+dashboards:
+  - file: dashboards/example-dashboard.json

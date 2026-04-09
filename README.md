@@ -2,6 +2,12 @@
 
 This repository contains a Helm chart template designed specifically for Lido Finance applications. It provides a standardized way to deploy and manage Lido Finance services on Kubernetes clusters.
 
+Available templates:
+
+- `helm-chart/` for application workloads that teams consume as a dependency in their service charts
+- `alerts/` for standalone team `PrometheusRule` charts
+- `grafana-dashboards/` for standalone team Grafana dashboard charts backed by ConfigMaps
+
 ## Overview
 
 The template includes pre-configured settings for:
@@ -18,6 +24,8 @@ The template includes pre-configured settings for:
 - Security Context configurations
 - Persistent Volume Claims for storage
 - OpenBao (Vault) Agent Injector for secret management
+- Standalone Grafana dashboard charts for team namespaces
+- Standalone Prometheus alert rule charts for team namespaces
 
 ## Prerequisites
 
@@ -33,20 +41,28 @@ The template includes pre-configured settings for:
    - [ ] Run Helm lint:
      ```bash
      helm lint helm-chart/
+     helm lint alerts/
+     helm lint grafana-dashboards/
      ```
    - [ ] Test template rendering:
      ```bash
      helm template lido-app helm-chart/
+     helm template lido-alerts alerts/ --values alerts/ci-values.yaml
+     helm template lido-grafana-dashboards grafana-dashboards/ --values grafana-dashboards/ci-values.yaml
      ```
    - [ ] Validate values:
      ```bash
      helm template lido-app helm-chart/ --values helm-chart/values.yaml
+     helm template lido-alerts alerts/ --values alerts/values.yaml
+     helm template lido-grafana-dashboards grafana-dashboards/ --values grafana-dashboards/values.yaml
      ```
 
 2. **Build and Package**
    - [ ] Package the chart:
      ```bash
      helm package helm-chart/
+     helm package alerts/
+     helm package grafana-dashboards/
      ```
    - [ ] Create index file:
      ```bash
@@ -270,6 +286,65 @@ dependencies:
     version: 1.3.6
     repository: "oci://ghcr.io/lidofinance/helm-charts"
 ```
+
+## Grafana Dashboards Template
+
+Use `grafana-dashboards/` to create charts such as `csm-grafana-dashboards` in the team `helm-charts-*` repositories.
+
+The chart renders one ConfigMap per dashboard file with:
+
+- label `grafana_dashboard: "1"`
+- annotation `grafana_folder`
+
+This matches the existing Grafana sidecar configuration in `k8s-infra/l2`, so ArgoCD only needs to deploy the chart into the team namespace for dashboards to be discovered automatically.
+
+Dashboard files live under `dashboards/`. Existing JSON dashboards from the old non-Kubernetes alerts-box layout can be copied there as-is and then referenced from values.
+
+Example values:
+
+```yaml
+dashboards:
+  - file: dashboards/application-overview.json
+  - file: dashboards/redis.json
+    folder: Redis
+```
+
+If `namespaceOverride` is empty, ConfigMaps are created in the Helm release namespace.
+
+## Prometheus Alerts Template
+
+Use `alerts/` to create charts such as `csm-alerts` in the team `helm-charts-*` repositories.
+
+Alert rule files live under `files/` and must contain the `PrometheusRule.spec` payload starting with `groups:`. Existing alert files from the old infra layout can be moved here after adapting expressions and labels to the Kubernetes metrics model.
+
+Example values:
+
+```yaml
+alertRules:
+  - file: files/example-alert.yaml
+```
+
+If `namespaceOverride` is empty, `PrometheusRule` resources are created in the Helm release namespace. Team Prometheus stacks already discover rules from namespaces labeled with `app.kubernetes.io/team`, which is how the current `k8s-infra/l2` setup scopes team monitoring.
+
+## ArgoCD
+
+Teams should register the standalone dashboards and alerts charts alongside their application charts in `apps/apps.yaml`. Example:
+
+```yaml
+- name: csm-alerts
+  type: helm
+  chartPath: csm-alerts
+  repoURL: https://github.com/lidofinance/helm-charts-csm.git
+  revision: "main"
+
+- name: csm-grafana-dashboards
+  type: helm
+  chartPath: csm-grafana-dashboards
+  repoURL: https://github.com/lidofinance/helm-charts-csm.git
+  revision: "main"
+```
+
+Set the ArgoCD destination namespace to the team namespace so the rendered `PrometheusRule` and dashboard ConfigMaps are picked up by the team metrics and dashboards stacks automatically.
 
 # Future Improvements
 
