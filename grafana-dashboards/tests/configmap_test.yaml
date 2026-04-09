@@ -15,6 +15,7 @@ tests:
           count: 0
 
   - it: should render a Grafana dashboard configmap with derived defaults
+    documentIndex: 0
     asserts:
       - isKind:
           of: ConfigMap
