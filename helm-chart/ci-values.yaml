@@ -98,6 +98,7 @@ containers:
     command:
       - /bin/sh
       - -ec
+    args:
       - . /vault/secrets/app && exec /app/start.sh
     startupProbe:
       httpGet:
@@ -121,4 +122,7 @@ containers:
       - name: data
         mountPath: /data
     env:
-      FEATURE_X_ENABLED: "true"
+      - name: FEATURE_X_ENABLED
+        value: "true"
+      - name: NUMERIC_STRING
+        value: "42"

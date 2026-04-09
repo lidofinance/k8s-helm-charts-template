@@ -179,10 +179,14 @@ containers:
       initialDelaySeconds: 3
       periodSeconds: 3
     env:
-      FEATURE_X_ENABLED: "true"
+      - name: FEATURE_X_ENABLED
+        value: "true"
+    # envMap:
+    #   FEATURE_X_ENABLED: "true"
     # command:
     #   - /bin/sh
     #   - -ec
+    # args:
     #   - . /vault/secrets/app && exec /app/start.sh
     # imagePullPolicy: Always
     # resources:

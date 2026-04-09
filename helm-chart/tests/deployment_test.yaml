@@ -61,8 +61,22 @@ tests:
           path: spec.template.spec.containers[0].command[1]
           value: -ec
       - equal:
-          path: spec.template.spec.containers[0].command[2]
+          path: spec.template.spec.containers[0].args[0]
           value: . /vault/secrets/app && exec /app/start.sh
+
+      # ─────────────── env ───────────────
+      - equal:
+          path: spec.template.spec.containers[0].env[0].name
+          value: FEATURE_X_ENABLED
+      - equal:
+          path: spec.template.spec.containers[0].env[0].value
+          value: "true"
+      - equal:
+          path: spec.template.spec.containers[0].env[1].name
+          value: NUMERIC_STRING
+      - equal:
+          path: spec.template.spec.containers[0].env[1].value
+          value: "42"
 
       # ─────────────── serviceAccount ───────────────
       - equal:
