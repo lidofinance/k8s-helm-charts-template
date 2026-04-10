@@ -67,15 +67,29 @@ spec:
           resources:
             {{- $.Values.resources | toYaml | nindent 12 }}
           {{- end }}
-          {{- with $c.env }}
+          {{- if $c.env }}
           env:
-          {{- range $key, $value := . }}
+            {{- if kindIs "slice" $c.env }}
+            {{- toYaml $c.env | nindent 12 }}
+            {{- else }}
+            {{- range $key, $value := $c.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
-          {{- end }}
+            {{- end }}
+            {{- end }}
+          {{- else if $c.envMap }}
+          env:
+            {{- range $key, $value := $c.envMap }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
           {{- end }}
           {{- with $c.command }}
           command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $c.args }}
+          args:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with $c.startupProbe }}
