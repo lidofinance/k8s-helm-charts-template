@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.4.0]
+## [1.4.0] - 10-04-2026
 
 - Added support for `containers[].args` in the deployment template
 - Added support for native Kubernetes `EnvVar` arrays via `containers[].env`
