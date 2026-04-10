@@ -1,5 +1,7 @@
+{{- define "lido.grafanaDashboards.render" -}}
 {{- $root := . }}
-{{- range $configmap := .Values.configmapsFromFiles }}
+{{- $defaultFolder := default "Custom" $root.Values.defaultFolder }}
+{{- range $configmap := $root.Values.configmapsFromFiles }}
 {{- $filePath := required "configmapsFromFiles[].filePath is required" $configmap.filePath }}
 {{- $fileName := base $filePath }}
 {{- $name := default (printf "grafana-dashboard-%s" (regexReplaceAll "\\.json$" $fileName "")) $configmap.name }}
@@ -8,7 +10,7 @@
 {{- with $configmap.labels }}
 {{- $labels = mergeOverwrite $labels . }}
 {{- end }}
-{{- $annotations := dict "grafana_folder" $root.Values.defaultFolder }}
+{{- $annotations := dict "grafana_folder" $defaultFolder }}
 {{- with $configmap.annotations }}
 {{- $annotations = mergeOverwrite $annotations . }}
 {{- end }}
@@ -29,4 +31,5 @@ data:
   {{ default $fileName $configmap.fileKey }}: |
 {{ $root.Files.Get $filePath | nindent 4 }}
 ---
+{{- end }}
 {{- end }}

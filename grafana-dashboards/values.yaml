@@ -13,3 +13,7 @@ configmapsFromFiles: []
 #     # annotations:
 #     #   grafana_folder: CSM
 #     filePath: dashboards/example-dashboard.json
+#
+# Consuming charts should define these values at the parent chart root and
+# render the resources with:
+# {{ include "lido.grafanaDashboards.render" . }}

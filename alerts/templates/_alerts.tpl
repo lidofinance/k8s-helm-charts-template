@@ -1,5 +1,6 @@
+{{- define "lido.alerts.render" -}}
 {{- $root := . }}
-{{- range $rule := .Values.alertRules }}
+{{- range $rule := $root.Values.alertRules }}
 {{- $filePath := required "alertRules[].file is required" $rule.file }}
 {{- $name := default (regexReplaceAll "(\\.rule)?\\.ya?ml$" (base $filePath) "") $rule.name }}
 {{- $namespace := default $root.Release.Namespace $rule.namespace }}
@@ -11,4 +12,5 @@ metadata:
 spec:
 {{ $root.Files.Get $filePath | fromYaml | toYaml | nindent 2 }}
 ---
+{{- end }}
 {{- end }}

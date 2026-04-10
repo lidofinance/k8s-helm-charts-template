@@ -55,6 +55,51 @@ jobs:
 
       - name: Run unit tests
         run: |
+          set -euo pipefail
+
+          alerts_version=$(grep '^version:' alerts/Chart.yaml | awk '{print $2}')
+          dashboards_version=$(grep '^version:' grafana-dashboards/Chart.yaml | awk '{print $2}')
+          tmp_root=$(mktemp -d)
+
+          mkdir -p "${tmp_root}/alerts/templates" "${tmp_root}/alerts/tests" "${tmp_root}/alerts/files"
+          cat > "${tmp_root}/alerts/Chart.yaml" <<EOF
+          apiVersion: v2
+          name: alerts-consumer-test
+          version: 0.1.0
+          type: application
+          dependencies:
+            - name: alerts
+              version: ${alerts_version}
+              repository: "file://$(pwd)/alerts"
+          EOF
+          cp alerts/ci-values.yaml "${tmp_root}/alerts/ci-values.yaml"
+          cp alerts/tests/prometheusrule_test.yaml "${tmp_root}/alerts/tests/prometheusrule_test.yaml"
+          cp alerts/files/example-alert.yaml "${tmp_root}/alerts/files/example-alert.yaml"
+          cat > "${tmp_root}/alerts/templates/prometheusrule.yaml" <<'EOF'
+          {{ include "lido.alerts.render" . }}
+          EOF
+
+          mkdir -p "${tmp_root}/grafana-dashboards/templates" "${tmp_root}/grafana-dashboards/tests" "${tmp_root}/grafana-dashboards/dashboards"
+          cat > "${tmp_root}/grafana-dashboards/Chart.yaml" <<EOF
+          apiVersion: v2
+          name: grafana-dashboards-consumer-test
+          version: 0.1.0
+          type: application
+          dependencies:
+            - name: grafana-dashboards
+              version: ${dashboards_version}
+              repository: "file://$(pwd)/grafana-dashboards"
+          EOF
+          cp grafana-dashboards/ci-values.yaml "${tmp_root}/grafana-dashboards/ci-values.yaml"
+          cp grafana-dashboards/tests/configmap_test.yaml "${tmp_root}/grafana-dashboards/tests/configmap_test.yaml"
+          cp grafana-dashboards/dashboards/example-dashboard.json "${tmp_root}/grafana-dashboards/dashboards/example-dashboard.json"
+          cat > "${tmp_root}/grafana-dashboards/templates/configmap.yaml" <<'EOF'
+          {{ include "lido.grafanaDashboards.render" . }}
+          EOF
+
+          helm dependency build "${tmp_root}/alerts"
+          helm dependency build "${tmp_root}/grafana-dashboards"
+
           helm unittest helm-chart
-          helm unittest alerts
-          helm unittest grafana-dashboards
+          helm unittest "${tmp_root}/alerts"
+          helm unittest "${tmp_root}/grafana-dashboards"
