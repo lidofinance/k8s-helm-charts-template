@@ -4,4 +4,4 @@ type: library
 description: Shared helpers to render Prometheus alert rules from a parent chart.
 maintainers:
   - name: DevOps
-version: 1.3.9
+version: 1.0.0
