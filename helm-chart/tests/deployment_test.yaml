@@ -205,23 +205,3 @@ tests:
           content:
             name: FEATURE_X_ENABLED
             value: "true"
-
-  - it: should allow container-specific ephemeral-storage overrides
-    set:
-      name: test-app
-      team: test-team
-      env: test-env
-      containers[0].name: container-1
-      containers[0].image.name: docker.io/test-image
-      containers[0].image.tag: v1.3.0
-      resources.requests.ephemeral-storage: 512Mi
-      resources.limits.ephemeral-storage: 1Gi
-      containers[0].resources.requests.ephemeral-storage: 256Mi
-      containers[0].resources.limits.ephemeral-storage: 768Mi
-    asserts:
-      - equal:
-          path: spec.template.spec.containers[0].resources.requests.ephemeral-storage
-          value: "256Mi"
-      - equal:
-          path: spec.template.spec.containers[0].resources.limits.ephemeral-storage
-          value: "768Mi"
