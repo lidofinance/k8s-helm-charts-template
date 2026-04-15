@@ -87,9 +87,11 @@ resources:
   limits:
     cpu: 100m
     memory: 56Mi
+    # ephemeral-storage: 1Gi
   requests:
     cpu: 100m
     memory: 56Mi
+    # ephemeral-storage: 512Mi
 
 service:
   # Whether service is enabled or disabled
@@ -193,6 +195,11 @@ containers:
     #   requests:
     #     cpu: "150m"
     #     memory: "128Mi"
+    #     ephemeral-storage: "512Mi"
+    #   limits:
+    #     cpu: "250m"
+    #     memory: "256Mi"
+    #     ephemeral-storage: "1Gi"
     # volumeMounts:
     #   - name: app-shared
     #     mountPath: /storage/shared
