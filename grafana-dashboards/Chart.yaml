@@ -1,0 +1,7 @@
+apiVersion: v2
+name: grafana-dashboards
+type: library
+description: Shared helpers to render Grafana dashboards from a parent chart.
+maintainers:
+  - name: DevOps
+version: 1.0.0

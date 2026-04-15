@@ -1,0 +1,12 @@
+# Exclude tests
+tests/
+
+# Exclude CI values
+ci-values.yaml
+
+# General excludes
+*.tgz
+*.log
+*.bak
+.DS_Store
+.git/

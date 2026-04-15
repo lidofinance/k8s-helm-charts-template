@@ -1,9 +1,11 @@
-name: Lint and test Helm Chart
+name: Lint and test Helm Charts
 
 on:
   push:
     paths:
       - 'helm-chart/**'
+      - 'alerts/**'
+      - 'grafana-dashboards/**'
       - '.github/workflows/*.yml'
 
 jobs:
@@ -11,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -36,6 +38,8 @@ jobs:
       - name: Run helm lint
         run: |
           helm lint helm-chart/
+          helm lint alerts/
+          helm lint grafana-dashboards/
 
       - name: Run chart-testing (list-changed)
         id: list-changed
@@ -51,4 +55,51 @@ jobs:
 
       - name: Run unit tests
         run: |
+          set -euo pipefail
+
+          alerts_version=$(grep '^version:' alerts/Chart.yaml | awk '{print $2}')
+          dashboards_version=$(grep '^version:' grafana-dashboards/Chart.yaml | awk '{print $2}')
+          tmp_root=$(mktemp -d)
+
+          mkdir -p "${tmp_root}/alerts/templates" "${tmp_root}/alerts/tests" "${tmp_root}/alerts/files"
+          cat > "${tmp_root}/alerts/Chart.yaml" <<EOF
+          apiVersion: v2
+          name: alerts-consumer-test
+          version: 0.1.0
+          type: application
+          dependencies:
+            - name: alerts
+              version: ${alerts_version}
+              repository: "file://$(pwd)/alerts"
+          EOF
+          cp alerts/ci-values.yaml "${tmp_root}/alerts/ci-values.yaml"
+          cp alerts/tests/prometheusrule_test.yaml "${tmp_root}/alerts/tests/prometheusrule_test.yaml"
+          cp alerts/files/example-alert.yaml "${tmp_root}/alerts/files/example-alert.yaml"
+          cat > "${tmp_root}/alerts/templates/prometheusrule.yaml" <<'EOF'
+          {{ include "lido.alerts.render" . }}
+          EOF
+
+          mkdir -p "${tmp_root}/grafana-dashboards/templates" "${tmp_root}/grafana-dashboards/tests" "${tmp_root}/grafana-dashboards/dashboards"
+          cat > "${tmp_root}/grafana-dashboards/Chart.yaml" <<EOF
+          apiVersion: v2
+          name: grafana-dashboards-consumer-test
+          version: 0.1.0
+          type: application
+          dependencies:
+            - name: grafana-dashboards
+              version: ${dashboards_version}
+              repository: "file://$(pwd)/grafana-dashboards"
+          EOF
+          cp grafana-dashboards/ci-values.yaml "${tmp_root}/grafana-dashboards/ci-values.yaml"
+          cp grafana-dashboards/tests/configmap_test.yaml "${tmp_root}/grafana-dashboards/tests/configmap_test.yaml"
+          cp grafana-dashboards/dashboards/example-dashboard.json "${tmp_root}/grafana-dashboards/dashboards/example-dashboard.json"
+          cat > "${tmp_root}/grafana-dashboards/templates/configmap.yaml" <<'EOF'
+          {{ include "lido.grafanaDashboards.render" . }}
+          EOF
+
+          helm dependency build "${tmp_root}/alerts"
+          helm dependency build "${tmp_root}/grafana-dashboards"
+
           helm unittest helm-chart
+          helm unittest "${tmp_root}/alerts"
+          helm unittest "${tmp_root}/grafana-dashboards"

@@ -1,0 +1,5 @@
+alertRules:
+  - file: files/example-alert.yaml
+  - name: explicit-alert
+    namespace: custom-namespace
+    file: files/example-alert.yaml

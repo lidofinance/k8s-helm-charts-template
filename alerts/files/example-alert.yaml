@@ -1,0 +1,12 @@
+groups:
+  - name: example-app
+    rules:
+      - alert: ExampleAppDown
+        expr: up{job="example-app"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Example app is down
+          description: Example app has been unreachable for 5 minutes.
+          grafana: https://grafana.example.org/d/example-app-overview

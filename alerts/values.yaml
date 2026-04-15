@@ -1,0 +1,11 @@
+alertRules: []
+# Example:
+# alertRules:
+#   - file: files/example-alert.yaml
+#     # Optional overrides:
+#     # name: example-alert
+#     # namespace: team-csm
+#
+# Consuming charts should define these values at the parent chart root and
+# render the resources with:
+# {{ include "lido.alerts.render" . }}

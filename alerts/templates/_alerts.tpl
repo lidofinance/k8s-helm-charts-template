@@ -1,0 +1,16 @@
+{{- define "lido.alerts.render" -}}
+{{- $root := . }}
+{{- range $rule := $root.Values.alertRules }}
+{{- $filePath := required "alertRules[].file is required" $rule.file }}
+{{- $name := default (regexReplaceAll "(\\.rule)?\\.ya?ml$" (base $filePath) "") $rule.name }}
+{{- $namespace := default $root.Release.Namespace $rule.namespace }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+spec:
+{{ $root.Files.Get $filePath | fromYaml | toYaml | nindent 2 }}
+---
+{{- end }}
+{{- end }}

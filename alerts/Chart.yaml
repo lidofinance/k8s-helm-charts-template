@@ -1,0 +1,7 @@
+apiVersion: v2
+name: alerts
+type: library
+description: Shared helpers to render Prometheus alert rules from a parent chart.
+maintainers:
+  - name: DevOps
+version: 1.0.0

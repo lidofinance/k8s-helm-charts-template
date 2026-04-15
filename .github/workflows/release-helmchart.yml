@@ -1,4 +1,4 @@
-name: Release Helm Chart
+name: Release Helm Charts
 
 on:
   push:
@@ -33,21 +33,27 @@ jobs:
 
       - name: Run helm lint and package
         run: |
+          set -euo pipefail
           mkdir -p dist
-          helm lint helm-chart/
-          chart_version_from_file=$(grep '^version:' helm-chart/Chart.yaml | awk '{print $2}')
-          if [ "$chart_version_from_file" != "$CHART_VERSION" ]; then
-            echo "Version mismatch: Chart.yaml version is $chart_version_from_file but tag is $CHART_VERSION!"
-            exit 1
-          fi
-          helm package helm-chart/ --version "$CHART_VERSION" --destination dist
+          charts=("helm-chart" "alerts" "grafana-dashboards")
+          for chart in "${charts[@]}"; do
+            helm lint "${chart}/"
+            chart_version_from_file=$(grep '^version:' "${chart}/Chart.yaml" | awk '{print $2}')
+            if [ "$chart_version_from_file" != "$CHART_VERSION" ]; then
+              echo "Version mismatch: ${chart}/Chart.yaml version is $chart_version_from_file but tag is $CHART_VERSION!"
+              exit 1
+            fi
+            helm package "${chart}/" --version "$CHART_VERSION" --destination dist
+          done
 
-      - name: Calculate SHA256 checksum
-        id: checksum
+      - name: Calculate SHA256 checksums
+        id: checksums
         run: |
-          CHART_FILE=dist/k8s-helm-charts-template-${CHART_VERSION}.tgz
-          SHA256=$(sha256sum "$CHART_FILE" | awk '{print $1}')
-          echo "sha256=$SHA256" >> $GITHUB_ENV
+          {
+            echo "checksums<<EOF"
+            sha256sum dist/*.tgz
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Get Commit Messages
         id: commit_message
@@ -66,12 +72,14 @@ jobs:
           body: |
             ${{ env.commit_message }}
 
-            SHA256 checksum of the Helm chart:
-            `${{ env.sha256 }}`
+            SHA256 checksums of the Helm charts:
+            ```
+            ${{ steps.checksums.outputs.checksums }}
+            ```
           draft: false
           prerelease: false
 
-      - name: Upload Helm chart package
+      - name: Upload app chart package
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -81,6 +89,26 @@ jobs:
           asset_name: k8s-helm-charts-template-${{ env.CHART_VERSION }}.tgz
           asset_content_type: application/gzip
 
+      - name: Upload alerts chart package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/alerts-${{ env.CHART_VERSION }}.tgz
+          asset_name: alerts-${{ env.CHART_VERSION }}.tgz
+          asset_content_type: application/gzip
+
+      - name: Upload dashboards chart package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/grafana-dashboards-${{ env.CHART_VERSION }}.tgz
+          asset_name: grafana-dashboards-${{ env.CHART_VERSION }}.tgz
+          asset_content_type: application/gzip
+
       - name: Login to GHCR
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | \
@@ -88,5 +116,6 @@ jobs:
 
       - name: Push chart to GHCR (OCI)
         run: |
-          CHART_TGZ=$(ls ./dist/*.tgz | head -n 1)
-          helm push "$CHART_TGZ" oci://ghcr.io/${{ github.repository_owner }}/helm-charts
+          for chart_tgz in ./dist/*.tgz; do
+            helm push "$chart_tgz" oci://ghcr.io/${{ github.repository_owner }}/helm-charts
+          done
