@@ -87,7 +87,7 @@ The following table lists the configurable parameters of the chart and their def
 | `image.pullPolicy`              | Image pull policy                   | `IfNotPresent`           |
 | `service.type`                  | Kubernetes service type             | `ClusterIP`              |
 | `service.ports`                 | Service ports configuration         | See values.yaml          |
-| `resources`                     | CPU/Memory resource requests/limits | See values.yaml          |
+| `resources`                     | CPU/Memory/Storage requests/limits  | See values.yaml          |
 | `terminationGracePeriodSeconds` | Pod termination grace period        | `30`                     |
 | `securityContext`               | Pod security context settings       | See values.yaml          |
 | `serviceAccount.name`           | Service account name                | `sa-lido-default`        |
@@ -183,6 +183,24 @@ containers:
     envMap:
       FEATURE_X_ENABLED: "true"
 ```
+
+### Ephemeral Storage
+
+The chart passes the `resources` map to Kubernetes as-is, so you can use standard resource keys such as `ephemeral-storage` both globally and per container.
+
+```yaml
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+    ephemeral-storage: 512Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+    ephemeral-storage: 1Gi
+```
+
+If only one container needs a different value, set `containers[].resources`. Explicit container values take precedence over namespace `LimitRange` defaults (for now it's 3GiB).
 
 ### OpenBao (Vault) Secret Injection
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.1] - 15-04-2026
+
+- Documented `ephemeral-storage` usage in chart values and README examples
+- Added CI values and deployment tests covering `resources.requests/limits.ephemeral-storage`
+- Added deployment test coverage for container-specific `containers[].resources.ephemeral-storage` overrides
+
 ## [1.4.0] - 10-04-2026
 
 - Added support for `containers[].args` in the deployment template

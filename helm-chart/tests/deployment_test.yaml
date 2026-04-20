@@ -128,11 +128,17 @@ tests:
           path: spec.template.spec.containers[0].resources.limits.memory
           value: "128Mi"
       - equal:
+          path: spec.template.spec.containers[0].resources.limits.ephemeral-storage
+          value: "1Gi"
+      - equal:
           path: spec.template.spec.containers[0].resources.requests.cpu
           value: "250m"
       - equal:
           path: spec.template.spec.containers[0].resources.requests.memory
           value: "64Mi"
+      - equal:
+          path: spec.template.spec.containers[0].resources.requests.ephemeral-storage
+          value: "512Mi"
 
       # ─────────────── probes ───────────────
       - equal:
