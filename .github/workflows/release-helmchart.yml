@@ -37,10 +37,11 @@ jobs:
           mkdir -p dist
           charts=("helm-chart" "alerts" "grafana-dashboards")
           for chart in "${charts[@]}"; do
-            if [ "$chart" = "helm-chart" ]; then
-              helm lint "${chart}/" --values "${chart}/ci-values.yaml"
-            else
-              helm lint "${chart}/"
+            helm lint "${chart}/"
+            chart_version_from_file=$(grep '^version:' "${chart}/Chart.yaml" | awk '{print $2}')
+            if [ "$chart_version_from_file" != "$CHART_VERSION" ]; then
+              echo "Version mismatch: ${chart}/Chart.yaml version is $chart_version_from_file but tag is $CHART_VERSION!"
+              exit 1
             fi
             helm package "${chart}/" --version "$CHART_VERSION" --destination dist
           done
