@@ -98,6 +98,7 @@ The following table lists the configurable parameters of the chart and their def
 | `servicemonitor.endpoints`      | List of ServiceMonitors             | See values.yaml          |
 | `openbao.enabled`               | Enable OpenBao secret injection     | `false`                  |
 | `openbao.annotations`           | OpenBao agent annotations           | `{}`                     |
+| `cronjobs`                      | List of cronjobs with params      | See values.yaml          |
 
 ### Health Checks
 
@@ -183,6 +184,10 @@ containers:
     envMap:
       FEATURE_X_ENABLED: "true"
 ```
+
+### Cronjobs
+
+You can setup a list of cronjobs. It's basically containers that run on a schedule. All the values inside `containers` are the same as in Deployment listed above.
 
 ### Ephemeral Storage
 

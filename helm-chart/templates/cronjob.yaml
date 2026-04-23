@@ -1,0 +1,134 @@
+{{- if .Values.cronjobs }}
+{{- range $i, $cronjob := .Values.cronjobs }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ default $.Values.name $cronjob.name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "specific.labels" $ | nindent 4 }}
+  {{- with $cronjob.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  schedule: {{ $cronjob.schedule | quote }}
+  {{- with $cronjob.timeZone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
+  concurrencyPolicy: {{ default "Forbid" $cronjob.concurrencyPolicy }}
+  suspend: {{ default false $cronjob.suspend }}
+  successfulJobsHistoryLimit: {{ default 3 $cronjob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ default 1 $cronjob.failedJobsHistoryLimit }}
+  {{- with $cronjob.startingDeadlineSeconds }}
+  startingDeadlineSeconds: {{ . }}
+  {{- end }}
+  jobTemplate:
+    spec:
+      {{- with $cronjob.backoffLimit }}
+      backoffLimit: {{ . }}
+      {{- end }}
+      {{- with $cronjob.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ . }}
+      {{- end }}
+      template:
+        metadata:
+          labels:
+            {{- include "specific.labels" $ | nindent 12 }}
+          {{- if $.Values.openbao.enabled }}
+          annotations:
+            {{- toYaml $.Values.openbao.annotations | nindent 12 }}
+          {{- end }}
+        spec:
+          serviceAccountName: {{ $.Values.serviceAccount.name }}
+          restartPolicy: {{ default "Never" $cronjob.restartPolicy }}
+          terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
+          securityContext:
+            runAsUser: {{ $.Values.securityContext.runAsUser }}
+            runAsGroup: {{ $.Values.securityContext.runAsGroup }}
+            fsGroup: {{ $.Values.securityContext.fsGroup }}
+            fsGroupChangePolicy: OnRootMismatch
+          containers:
+            {{- range $i, $c := $cronjob.containers }}
+            {{- $imageName := default $.Values.image.name $c.image.name }}
+            {{- $imageTag := default $.Values.image.tag $c.image.tag }}
+            - name: {{ default $.Values.name $c.name }}
+              image: {{ if regexMatch "^sha256:[a-fA-F0-9]{64}$" ($imageTag | toString) }}{{ printf "%s@%s" $imageName ($imageTag | toString) | quote }}{{ else }}{{ printf "%s:%s" $imageName ($imageTag | toString) | quote }}{{ end }}
+              imagePullPolicy: {{ default "Always" $c.imagePullPolicy }}
+              securityContext:
+                runAsNonRoot: true
+                privileged: false
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                seccompProfile:
+                  type: RuntimeDefault
+                appArmorProfile:
+                  type: RuntimeDefault
+                readOnlyRootFilesystem: {{ default $.Values.securityContext.readOnlyRootFilesystem (and $c.securityContext $c.securityContext.readOnlyRootFilesystem) }}
+                {{- with $c.securityContext }}
+                {{- with .runAsUser }}
+                runAsUser: {{ . }}
+                {{- end }}
+                {{- with .runAsGroup }}
+                runAsGroup: {{ . }}
+                {{- end }}
+                {{- end }}
+              {{- with $c.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- else }}
+              resources:
+                {{- $.Values.resources | toYaml | nindent 16 }}
+              {{- end }}
+              {{- if $c.env }}
+              env:
+                {{- if kindIs "slice" $c.env }}
+                {{- toYaml $c.env | nindent 16 }}
+                {{- else }}
+                {{- range $key, $value := $c.env }}
+                - name: {{ $key }}
+                  value: {{ $value | quote }}
+                {{- end }}
+                {{- end }}
+              {{- else if $c.envMap }}
+              env:
+                {{- range $key, $value := $c.envMap }}
+                - name: {{ $key }}
+                  value: {{ $value | quote }}
+                {{- end }}
+              {{- end }}
+              {{- with $c.command }}
+              command:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with $c.args }}
+              args:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with $c.startupProbe }}
+              startupProbe:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with $c.readinessProbe }}
+              readinessProbe:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with $c.livenessProbe }}
+              livenessProbe:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with $c.volumeMounts }}
+              volumeMounts:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+            {{- end }}
+          {{- if $.Values.volumes }}
+          volumes:
+            {{- with $.Values.volumes }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+{{- end }}
+{{- end }}
