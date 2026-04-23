@@ -7,13 +7,6 @@ on:
       - 'alerts/**'
       - 'grafana-dashboards/**'
       - '.github/workflows/*.yml'
-  pull_request:
-    paths:
-      - 'helm-chart/**'
-      - 'alerts/**'
-      - 'grafana-dashboards/**'
-      - '.github/workflows/*.yml'
-  workflow_dispatch:
 
 jobs:
   lint-and-test:
