@@ -26,7 +26,7 @@ tests:
 
       # ─────────────── template labels ───────────────
       - isNotEmpty:
-          path: spec.template.metadata.labels
+          path: spec.jobTemplate.spec.template.metadata.labels
 
       # ─────────────── container.image ───────────────
       - equal:

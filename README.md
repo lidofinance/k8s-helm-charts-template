@@ -187,7 +187,7 @@ containers:
 
 ### Cronjobs
 
-You can setup a list of cronjobs. It's basically containers that run on a schedule. All the values inside `containers` are the same as in Deployment listed above.
+You can set up a list of cronjobs. It's basically containers that run on a schedule. All the values inside `containers` are the same as in Deployment listed above.
 
 ### Ephemeral Storage
 
