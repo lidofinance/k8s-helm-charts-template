@@ -128,3 +128,25 @@ containers:
         value: "true"
       - name: NUMERIC_STRING
         value: "42"
+
+cronjobs:
+  - name: test-cronjob
+    schedule: "*/5 * * * *"   # every 5 minutes
+    restartPolicy: Never
+    containers:
+      - name: container-1
+        image:
+          name: docker.io/test-image
+          tag: v1.3.0
+          # name: busybox
+          # tag: "1.37.0"
+        command: ["/bin/sh", "-c"]
+        args:
+          - date; echo "Hello from container one"
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi

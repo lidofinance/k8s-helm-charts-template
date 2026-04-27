@@ -205,3 +205,69 @@ containers:
     #     mountPath: /storage/shared
     #   - name: cache
     #     mountPath: /var/cache/nginx
+
+
+  ## Cronjobs.containers values are the same as containers values above. Same rules are applied, volumeMounts too.
+  # cronjobs:
+  #   - name: cronjob
+  #     schedule: "*/5 * * * *"   # every 5 minutes
+  #     restartPolicy: Never
+  #
+  #     # Optional: Time zone for the CronJob schedule
+  #     # Default: not set (Kubernetes uses controller manager's time zone)
+  #     # Example values: "UTC", "Europe/Berlin"
+  #     timeZone: "UTC"
+  #
+  #     # Optional: How concurrent jobs are handled
+  #     # Default: "Forbid"
+  #     # Allowed values:
+  #     # - Allow   (allow concurrent runs)
+  #     # - Forbid  (skip new run if previous is still running)
+  #     # - Replace (cancel running job and start new one)
+  #     concurrencyPolicy: "Forbid"
+  #
+  #     # Optional: Suspend execution of the CronJob
+  #     # Default: false
+  #     suspend: false
+  #
+  #     # Optional: Number of successful finished jobs to retain
+  #     # Default: 3
+  #     successfulJobsHistoryLimit: 3
+  #
+  #     # Optional: Number of failed finished jobs to retain
+  #     # Default: 1
+  #     failedJobsHistoryLimit: 1
+  #
+  #     # Optional: Deadline in seconds for starting the job if it misses schedule
+  #     # Default: not set
+  #     # If set, the job will be skipped if it misses this deadline
+  #     startingDeadlineSeconds: 60
+  #     containers:
+  #       - name: container-1
+  #         image:
+  #           name: OVERRIDE-ME
+  #           tag: OVERRIDE-ME
+  #         command: ["/bin/sh", "-c"]
+  #         args:
+  #           - date; echo "Hello from container one"
+  #         resources:
+  #           requests:
+  #             cpu: 10m
+  #             memory: 16Mi
+  #           limits:
+  #             cpu: 50m
+  #             memory: 32Mi
+  #       - name: container-2
+  #         image:
+  #           name: OVERRIDE-ME
+  #           tag: OVERRIDE-ME
+  #         command: ["/bin/sh", "-c"]
+  #         args:
+  #           - date; echo "Hello from container 2"
+  #         resources:
+  #           requests:
+  #             cpu: 10m
+  #             memory: 16Mi
+  #           limits:
+  #             cpu: 50m
+  #             memory: 32Mi
