@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.5.0] - 24-04-2026
+## [1.5.1] - 24-04-2026
 
 - Added CronJob support. See README.md and values.yaml for details.
 
