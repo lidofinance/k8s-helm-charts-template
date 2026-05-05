@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.2] - 24-04-2026
+
+- Fixed: OpenBao sidecar container causing CronJobs to get stuck in the Progressing state.
+
 ## [1.5.1] - 24-04-2026
 
 - Added CronJob support. See README.md and values.yaml for details.

@@ -38,6 +38,7 @@ spec:
             {{- include "specific.labels" $ | nindent 12 }}
           {{- if $.Values.openbao.enabled }}
           annotations:
+            vault.hashicorp.com/agent-pre-populate-only : "true"
             {{- toYaml $.Values.openbao.annotations | nindent 12 }}
           {{- end }}
         spec:
