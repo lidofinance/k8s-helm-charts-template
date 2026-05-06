@@ -45,6 +45,9 @@ tests:
       - isNotEmpty:
           path: spec.template.metadata.labels
 
+      - equal:
+          path: spec.template.metadata.labels["resource"]
+          value: deployment
       # ─────────────── container.image ───────────────
       - equal:
           path: spec.template.spec.containers[0].image

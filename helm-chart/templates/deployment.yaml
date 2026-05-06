@@ -6,6 +6,7 @@ metadata:
   name: {{ .Values.name }}
   namespace: {{ .Release.Namespace }}
   labels:
+    resource: deployment
     {{- include "specific.labels" . | nindent 4 }}
   {{- with .Values.deployment.annotations }}
   annotations:
@@ -20,6 +21,7 @@ spec:
   template:
     metadata:
       labels:
+        resource: deployment
         {{- include "specific.labels" . | nindent 8 }}
       {{- if .Values.openbao.enabled }}
       annotations:
