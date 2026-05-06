@@ -4,4 +4,4 @@ type: library
 description: Shared helpers to render Grafana dashboards from a parent chart.
 maintainers:
   - name: DevOps
-version: 1.5.2
+version: 1.5.3

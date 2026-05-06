@@ -15,4 +15,5 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ .Values.name }}
+      resource: deployment
 {{- end }}
