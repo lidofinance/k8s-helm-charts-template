@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.4] - 13-05-2026
+
+- Added: `serviceAccount.automountServiceAccountToken` (default `false`) on Deployment and CronJob templates so workloads no longer mount a Kubernetes API token by default.
+- Added: dedicated projected ServiceAccount token volume for the OpenBao agent sidecar (configurable via `openbao.serviceAccountToken.volumeName` / `expirationSeconds`) so OpenBao injection continues to work when `automountServiceAccountToken: false`. The token volume is not mounted into application containers.
+
 ## [1.5.3] - 06-05-2026
 
 - Fixed: PDB resource affected all Pods with label name. Even CronJobs.

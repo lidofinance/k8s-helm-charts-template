@@ -91,6 +91,7 @@ The following table lists the configurable parameters of the chart and their def
 | `terminationGracePeriodSeconds` | Pod termination grace period        | `30`                     |
 | `securityContext`               | Pod security context settings       | See values.yaml          |
 | `serviceAccount.name`           | Service account name                | `sa-lido-default`        |
+| `serviceAccount.automountServiceAccountToken` | Automount default Kubernetes API token | `false`       |
 | `pvc.enabled`                   | Enable or disable PVC               | `false`                  |
 | `pvcs`                          | List of PVCs, see values.yaml       | See values.yaml          |
 | `containers`                    | List of containers with params      | See values.yaml          |
@@ -98,6 +99,7 @@ The following table lists the configurable parameters of the chart and their def
 | `servicemonitor.endpoints`      | List of ServiceMonitors             | See values.yaml          |
 | `openbao.enabled`               | Enable OpenBao secret injection     | `false`                  |
 | `openbao.annotations`           | OpenBao agent annotations           | `{}`                     |
+| `openbao.serviceAccountToken.volumeName` | Projected token volume for OpenBao agent auth | `openbao-token` |
 | `cronjobs`                      | List of cronjobs with params      | See values.yaml          |
 
 ### Health Checks
@@ -213,6 +215,11 @@ OpenBao Agent Injector is disabled by default. To enable it:
 
 1. Set `openbao.enabled` to `true`
 2. Configure annotations in the `openbao.annotations` section
+
+When OpenBao injection is enabled, the chart keeps `automountServiceAccountToken: false`
+and adds a dedicated projected ServiceAccount token volume for the injected OpenBao
+agent. The application containers do not mount this token unless you explicitly add
+that mount yourself.
 
 **Example configuration:**
 
