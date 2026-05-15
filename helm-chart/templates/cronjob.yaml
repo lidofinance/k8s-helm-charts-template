@@ -1,4 +1,7 @@
 {{- if .Values.cronjobs }}
+{{- $openbaoTokenVolumeName := dig "serviceAccountToken" "volumeName" "openbao-token" .Values.openbao }}
+{{- $openbaoTokenExpirationSeconds := dig "serviceAccountToken" "expirationSeconds" 3600 .Values.openbao }}
+{{- $openbaoAnnotations := omit .Values.openbao.annotations "vault.hashicorp.com/agent-service-account-token-volume-name" }}
 {{- range $i, $cronjob := .Values.cronjobs }}
 ---
 apiVersion: batch/v1
@@ -39,10 +42,14 @@ spec:
           {{- if $.Values.openbao.enabled }}
           annotations:
             vault.hashicorp.com/agent-pre-populate-only : "true"
-            {{- toYaml $.Values.openbao.annotations | nindent 12 }}
+            {{- with $openbaoAnnotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            vault.hashicorp.com/agent-service-account-token-volume-name: {{ $openbaoTokenVolumeName | quote }}
           {{- end }}
         spec:
           serviceAccountName: {{ $.Values.serviceAccount.name }}
+          automountServiceAccountToken: {{ default false $.Values.serviceAccount.automountServiceAccountToken }}
           restartPolicy: {{ default "Never" $cronjob.restartPolicy }}
           terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
           securityContext:
@@ -125,10 +132,18 @@ spec:
                 {{- toYaml . | nindent 16 }}
               {{- end }}
             {{- end }}
-          {{- if $.Values.volumes }}
+          {{- if or $.Values.volumes $.Values.openbao.enabled }}
           volumes:
             {{- with $.Values.volumes }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- if $.Values.openbao.enabled }}
+            - name: {{ $openbaoTokenVolumeName }}
+              projected:
+                sources:
+                  - serviceAccountToken:
+                      path: token
+                      expirationSeconds: {{ $openbaoTokenExpirationSeconds }}
             {{- end }}
           {{- end }}
 {{- end }}

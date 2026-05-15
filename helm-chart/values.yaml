@@ -48,11 +48,15 @@ securityContext:
 
 serviceAccount:
   name: default
+  automountServiceAccountToken: false
 
 # OpenBao configuration for secret injection
 openbao:
   enabled: false
   annotations: {}
+  serviceAccountToken:
+    volumeName: openbao-token
+    expirationSeconds: 3600
   # Example OpenBao configuration:
   # enabled: true
   # annotations:

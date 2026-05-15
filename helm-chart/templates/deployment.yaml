@@ -1,4 +1,7 @@
 {{- if .Values.deployment.enabled }}
+{{- $openbaoTokenVolumeName := dig "serviceAccountToken" "volumeName" "openbao-token" .Values.openbao }}
+{{- $openbaoTokenExpirationSeconds := dig "serviceAccountToken" "expirationSeconds" 3600 .Values.openbao }}
+{{- $openbaoAnnotations := omit .Values.openbao.annotations "vault.hashicorp.com/agent-service-account-token-volume-name" }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,10 +28,14 @@ spec:
         {{- include "specific.labels" . | nindent 8 }}
       {{- if .Values.openbao.enabled }}
       annotations:
-        {{- toYaml .Values.openbao.annotations | nindent 8 }}
+        {{- with $openbaoAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        vault.hashicorp.com/agent-service-account-token-volume-name: {{ $openbaoTokenVolumeName | quote }}
       {{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
+      automountServiceAccountToken: {{ default false .Values.serviceAccount.automountServiceAccountToken }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       securityContext:
         runAsUser: {{ .Values.securityContext.runAsUser }}
@@ -112,10 +119,18 @@ spec:
           {{- end }}
         {{- end }}
         {{- end }}
-      {{- if .Values.volumes }}
+      {{- if or .Values.volumes .Values.openbao.enabled }}
       volumes:
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.openbao.enabled }}
+        - name: {{ $openbaoTokenVolumeName }}
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: token
+                  expirationSeconds: {{ $openbaoTokenExpirationSeconds }}
         {{- end }}
       {{- end }}
   strategy:
