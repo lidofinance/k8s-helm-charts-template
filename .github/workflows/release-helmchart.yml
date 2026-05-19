@@ -68,7 +68,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: Release ${{ github.ref_name }}
           body: |
             ${{ env.commit_message }}
 
@@ -76,7 +76,7 @@ jobs:
             ```
             ${{ steps.checksums.outputs.checksums }}
             ```
-          draft: false
+          draft: true
           prerelease: false
 
       - name: Upload app chart package
@@ -108,6 +108,17 @@ jobs:
           asset_path: ./dist/grafana-dashboards-${{ env.CHART_VERSION }}.tgz
           asset_name: grafana-dashboards-${{ env.CHART_VERSION }}.tgz
           asset_content_type: application/gzip
+
+      - name: Publish Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ID: ${{ steps.create_release.outputs.id }}
+        run: |
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/releases/${RELEASE_ID} \
+            -f draft=false
 
       - name: Login to GHCR
         run: |
