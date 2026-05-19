@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.6] - 19-05-2026
+
+- Updating release-helmchart.yml github workflow; no functional changes.
+
 ## [1.5.5] - 19-05-2026
 
 - Re-release of 1.5.4; no functional changes — 1.5.4 was never published.
