@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.5] - 19-05-2026
+
+- Re-release of 1.5.4; no functional changes — 1.5.4 was never published.
+
 ## [1.5.4] - 13-05-2026
 
 - Added: `serviceAccount.automountServiceAccountToken` (default `false`) on Deployment and CronJob templates so workloads no longer mount a Kubernetes API token by default.
