@@ -133,12 +133,18 @@ pvc:
 #     size: 1Gi
 #     storageClass: "longhorn-standard"
 
+# Default sizeLimit applied to any emptyDir volume below that does not set its
+# own. The cluster enforces require-emptydir-sizelimit (Kyverno), which rejects
+# emptyDir volumes without a sizeLimit; this keeps rendered manifests compliant.
+# Override per-volume by setting emptyDir.sizeLimit explicitly.
+defaultEmptyDirSizeLimit: 1Gi
+
 # Example volume
 # volumes:
 #   - name: app-shared
 #     persistentVolumeClaim:
 #       claimName: app-shared
-# For rw directories
+# For rw directories (sizeLimit optional — defaults to defaultEmptyDirSizeLimit)
 #   - name: cache
 #     emptyDir:
 #       sizeLimit: 100Mi

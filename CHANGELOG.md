@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.7] - 02-06-2026
+
+- Added: `defaultEmptyDirSizeLimit` (default `1Gi`). Any `emptyDir` volume in `volumes` that does not set its own `sizeLimit` now renders with this default on both Deployment and CronJob templates. The cluster enforces the `require-emptydir-sizelimit` Kyverno policy, which rejects `emptyDir` volumes without a `sizeLimit`; this keeps rendered manifests compliant. Volumes that already set `sizeLimit`, and non-`emptyDir` volumes, are unchanged.
+
 ## [1.5.6] - 19-05-2026
 
 - Updating release-helmchart.yml github workflow; no functional changes.

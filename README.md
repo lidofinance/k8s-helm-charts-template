@@ -152,6 +152,14 @@ PersistentVolumeClaim is disabled by default. To enable it:
 
 Please keep in mind that `readOnlyRootFilesystem: true` will be enforced in the future. So if your containers need read-write access to some directories (e.g. cache or temp files) you need to mount them separately, please see values.yaml for examples.
 
+### emptyDir volumes
+
+The cluster enforces the `require-emptydir-sizelimit` Kyverno policy: every `emptyDir`
+volume must declare a `sizeLimit`, or the Pod is rejected at admission. To keep
+manifests compliant by default, any `emptyDir` under `volumes` that does not set its
+own `sizeLimit` is rendered with `defaultEmptyDirSizeLimit` (default `1Gi`). Set a
+per-volume `sizeLimit` to override, or tune `defaultEmptyDirSizeLimit` for the release.
+
 ### Ingress
 
 Ingress is disabled by default. To enable it:
