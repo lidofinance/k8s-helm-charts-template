@@ -32,3 +32,130 @@ tests:
       - equal:
           path: spec.selector.matchLabels["app.kubernetes.io/name"]
           value: test-app
+
+  # a. replicas >= 2, PDB enabled, maxUnavailable: 1 -> rendered with correct selector
+  - it: should render PDB when replicas >= 2 with maxUnavailable
+    set:
+      name: test-app
+      replicas: 2
+      HorizontalPodAutoscaler:
+        enabled: false
+      PodDisruptionBudget:
+        enabled: true
+        maxUnavailable: 1
+        minAvailable: null
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: PodDisruptionBudget
+      - equal:
+          path: spec.maxUnavailable
+          value: 1
+      - notExists:
+          path: spec.minAvailable
+      - equal:
+          path: spec.selector.matchLabels["app.kubernetes.io/name"]
+          value: test-app
+      - equal:
+          path: spec.selector.matchLabels.resource
+          value: deployment
+
+  # b. replicas: 1, HPA disabled, PDB enabled -> NO PDB rendered
+  - it: should suppress PDB when replicas is 1 and HPA disabled
+    set:
+      name: test-app
+      replicas: 1
+      HorizontalPodAutoscaler:
+        enabled: false
+      PodDisruptionBudget:
+        enabled: true
+        maxUnavailable: 1
+        minAvailable: null
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # c. replicas: 1, HPA enabled maxReplicas: 3, PDB enabled -> PDB rendered
+  - it: should render PDB when HPA can scale above 1
+    set:
+      name: test-app
+      replicas: 1
+      HorizontalPodAutoscaler:
+        enabled: true
+        minReplicas: 1
+        maxReplicas: 3
+      PodDisruptionBudget:
+        enabled: true
+        maxUnavailable: 1
+        minAvailable: null
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: PodDisruptionBudget
+
+  # d. replicas: 1, HPA enabled maxReplicas: 1, PDB enabled -> NO PDB rendered
+  - it: should suppress PDB when HPA maxReplicas is 1
+    set:
+      name: test-app
+      replicas: 1
+      HorizontalPodAutoscaler:
+        enabled: true
+        minReplicas: 1
+        maxReplicas: 1
+      PodDisruptionBudget:
+        enabled: true
+        maxUnavailable: 1
+        minAvailable: null
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # e. replicas: 2, PDB enabled, minAvailable only -> rendered with minAvailable only
+  - it: should render PDB with minAvailable only when maxUnavailable is unset
+    set:
+      name: test-app
+      replicas: 2
+      HorizontalPodAutoscaler:
+        enabled: false
+      PodDisruptionBudget:
+        enabled: true
+        maxUnavailable: null
+        minAvailable: 1
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.minAvailable
+          value: 1
+      - notExists:
+          path: spec.maxUnavailable
+
+  # f. both maxUnavailable and minAvailable set -> template fails
+  - it: should fail when both maxUnavailable and minAvailable are set
+    set:
+      name: test-app
+      replicas: 2
+      PodDisruptionBudget:
+        enabled: true
+        maxUnavailable: 1
+        minAvailable: 1
+    asserts:
+      - failedTemplate:
+          errorMessage: "PodDisruptionBudget: set exactly one of maxUnavailable or minAvailable, not both"
+
+  # f2. both keys set even at replicas: 1 -> still fails (fail-closed regardless of replica count)
+  - it: should fail when both keys are set even with a single replica
+    set:
+      name: test-app
+      replicas: 1
+      HorizontalPodAutoscaler:
+        enabled: false
+      PodDisruptionBudget:
+        enabled: true
+        maxUnavailable: 1
+        minAvailable: 1
+    asserts:
+      - failedTemplate:
+          errorMessage: "PodDisruptionBudget: set exactly one of maxUnavailable or minAvailable, not both"

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.7] - 04-06-2026
+
+- Added: PodDisruptionBudget is auto-suppressed when the workload's effective max replicas is <= 1 (i.e. `replicas: 1` AND either HPA disabled or HPA `maxReplicas <= 1`). Prevents rendering ineffective PDBs for single-pod charts. No consumer values changes are required.
+- Added: `helm template` now fails fast when both `PodDisruptionBudget.maxUnavailable` and `PodDisruptionBudget.minAvailable` are set (whenever the PDB is enabled, regardless of replica count), instead of producing an invalid PDB spec rejected at admission time.
+
 ## [1.5.6] - 19-05-2026
 
 - Updating release-helmchart.yml github workflow; no functional changes.
