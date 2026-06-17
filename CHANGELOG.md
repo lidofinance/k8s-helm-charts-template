@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 17-06-2026
+
+- Added: `helm template` now fails fast when a Deployment container is missing `readinessProbe` or `livenessProbe`, instead of rendering a probe-less container rejected at Kyverno admission time. `startupProbe` remains optional.
+
 ## [1.5.7] - 04-06-2026
 
 - Added: PodDisruptionBudget is auto-suppressed when the workload's effective max replicas is <= 1 (i.e. `replicas: 1` AND either HPA disabled or HPA `maxReplicas <= 1`). Prevents rendering ineffective PDBs for single-pod charts. No consumer values changes are required.

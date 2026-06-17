@@ -165,6 +165,7 @@ containers:
     image:
       name: OVERRIDE-ME
       tag: OVERRIDE-ME
+    # readinessProbe and livenessProbe are required; render fails without them. startupProbe is optional
     startupProbe:
       httpGet:
         path: /healthz

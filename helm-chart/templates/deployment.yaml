@@ -47,7 +47,11 @@ spec:
         {{- range $i, $c := .Values.containers }}
         {{- $imageName := coalesce ($c.image.name | default $.Values.image.name) }}
         {{- $imageTag := default $.Values.image.tag $c.image.tag }}
-        - name: {{ default $.Values.name $c.name }}
+        {{- $containerName := default $.Values.name $c.name }}
+        {{- /* readiness+liveness are mandatory; fail at render instead of at Kyverno admission. */ -}}
+        {{- if not $c.readinessProbe }}{{- fail (printf "container %q: readinessProbe is required" $containerName) -}}{{- end }}
+        {{- if not $c.livenessProbe }}{{- fail (printf "container %q: livenessProbe is required" $containerName) -}}{{- end }}
+        - name: {{ $containerName }}
           image: {{ if regexMatch "^sha256:[a-fA-F0-9]{64}$" ($imageTag | toString) }}{{ printf "%s@%s" $imageName ($imageTag | toString) | quote }}{{ else }}{{ printf "%s:%s" $imageName ($imageTag | toString) | quote }}{{ end }}
           imagePullPolicy: {{ default "Always" $c.imagePullPolicy }}
           securityContext:
