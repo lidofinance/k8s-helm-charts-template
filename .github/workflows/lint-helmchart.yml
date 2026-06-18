@@ -18,6 +18,15 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Check chart versions are in lockstep
+        run: |
+          set -euo pipefail
+          grep -Hm1 '^version:' */Chart.yaml
+          if [ "$(grep -hm1 '^version:' */Chart.yaml | awk '{print $2}' | sort -u | wc -l)" -ne 1 ]; then
+            echo "::error::Chart versions must match — all charts release in lockstep under one git tag, and the release workflow rejects a mismatch at tag time."
+            exit 1
+          fi
+
       - name: Install helm and unittest plugin
         run: |
           HELM_VERSION="3.18.6-1"
