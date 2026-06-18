@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.1] - 18-06-2026
+
+- Re-release of 1.6.0 with no functional changes. The 1.6.0 tag was consumed by a failed release run and cannot be reused (immutable releases), so the probe-guard change ships as 1.6.1.
+
 ## [1.6.0] - 17-06-2026
 
 - Added: `helm template` now fails fast when a Deployment container is missing `readinessProbe` or `livenessProbe`, instead of rendering a probe-less container rejected at Kyverno admission time. `startupProbe` remains optional.
