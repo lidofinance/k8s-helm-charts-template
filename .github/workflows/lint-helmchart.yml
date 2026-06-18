@@ -18,6 +18,20 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Check chart versions are in lockstep
+        run: |
+          set -euo pipefail
+          for chart in helm-chart alerts grafana-dashboards; do
+            grep -m1 '^version:' "${chart}/Chart.yaml" | awk -v c="${chart}" '{print c": "$2}'
+          done
+          distinct=$(for chart in helm-chart alerts grafana-dashboards; do
+            grep -m1 '^version:' "${chart}/Chart.yaml" | awk '{print $2}'
+          done | sort -u | wc -l)
+          if [ "${distinct}" -ne 1 ]; then
+            echo "::error::Chart versions must match — all three are released in lockstep under one git tag, and the release workflow rejects a mismatch at tag time."
+            exit 1
+          fi
+
       - name: Install helm and unittest plugin
         run: |
           HELM_VERSION="3.18.6-1"
