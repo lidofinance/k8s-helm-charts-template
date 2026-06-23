@@ -1,6 +1,7 @@
 {{- if .Values.cronjobs }}
 {{- $openbaoTokenVolumeName := dig "serviceAccountToken" "volumeName" "openbao-token" .Values.openbao }}
 {{- $openbaoTokenExpirationSeconds := dig "serviceAccountToken" "expirationSeconds" 3600 .Values.openbao }}
+{{- $openbaoTokenAudience := dig "serviceAccountToken" "audience" "" .Values.openbao }}
 {{- $openbaoAnnotations := omit .Values.openbao.annotations "vault.hashicorp.com/agent-service-account-token-volume-name" }}
 {{- range $i, $cronjob := .Values.cronjobs }}
 ---
@@ -144,6 +145,9 @@ spec:
                   - serviceAccountToken:
                       path: token
                       expirationSeconds: {{ $openbaoTokenExpirationSeconds }}
+                      {{- if $openbaoTokenAudience }}
+                      audience: {{ $openbaoTokenAudience }}
+                      {{- end }}
             {{- end }}
           {{- end }}
 {{- end }}

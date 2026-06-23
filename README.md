@@ -100,6 +100,7 @@ The following table lists the configurable parameters of the chart and their def
 | `openbao.enabled`               | Enable OpenBao secret injection     | `false`                  |
 | `openbao.annotations`           | OpenBao agent annotations           | `{}`                     |
 | `openbao.serviceAccountToken.volumeName` | Projected token volume for OpenBao agent auth | `openbao-token` |
+| `openbao.serviceAccountToken.audience` | JWT audience on the projected OpenBao token. Must match the OpenBao k8s auth role audience; set `""` to opt out | `openbao` |
 | `cronjobs`                      | List of cronjobs with params      | See values.yaml          |
 
 ### Health Checks

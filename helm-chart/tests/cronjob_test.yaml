@@ -94,7 +94,30 @@ tests:
                 - serviceAccountToken:
                     path: token
                     expirationSeconds: 7200
+                    audience: openbao
       - notContains:
           path: spec.jobTemplate.spec.template.spec.containers[0].volumeMounts
           content:
             name: openbao-custom-token
+
+  - it: should omit the token audience when explicitly disabled
+    set:
+      openbao:
+        enabled: true
+        annotations:
+          vault.hashicorp.com/agent-inject: "true"
+          vault.hashicorp.com/role: test-role
+        serviceAccountToken:
+          volumeName: openbao-custom-token
+          expirationSeconds: 7200
+          audience: ""
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.volumes
+          content:
+            name: openbao-custom-token
+            projected:
+              sources:
+                - serviceAccountToken:
+                    path: token
+                    expirationSeconds: 7200
