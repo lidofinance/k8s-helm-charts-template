@@ -57,8 +57,6 @@ openbao:
   serviceAccountToken:
     volumeName: openbao-token
     expirationSeconds: 3600
-    # Must match the OpenBao k8s auth role audience; set "" to opt out.
-    audience: "openbao"
   # Example OpenBao configuration:
   # enabled: true
   # annotations:

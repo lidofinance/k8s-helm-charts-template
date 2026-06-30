@@ -248,7 +248,7 @@ tests:
           content:
             name: openbao-custom-token
 
-  - it: should omit the token audience when explicitly disabled
+  - it: should force the infra-fixed token audience even when values try to override it
     set:
       openbao:
         enabled: true
@@ -267,3 +267,4 @@ tests:
                 - serviceAccountToken:
                     path: token
                     expirationSeconds: 3600
+                    audience: openbao
