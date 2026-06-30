@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.0] - 23-06-2026
+
+- Added: the projected OpenBao token carries a fixed `openbao` JWT audience on Deployments and CronJobs, so it is not a valid kube-apiserver credential. The audience matches the OpenBao k8s auth role and is owned by infra, not chart-configurable.
+
 ## [1.6.1] - 18-06-2026
 
 - Re-release of 1.6.0 with no functional changes. The 1.6.0 tag was consumed by a failed release run and cannot be reused (immutable releases), so the probe-guard change ships as 1.6.1.

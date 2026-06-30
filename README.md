@@ -220,8 +220,10 @@ OpenBao Agent Injector is disabled by default. To enable it:
 
 When OpenBao injection is enabled, the chart keeps `automountServiceAccountToken: false`
 and adds a dedicated projected ServiceAccount token volume for the injected OpenBao
-agent. The application containers do not mount this token unless you explicitly add
-that mount yourself.
+agent. The token carries a fixed `openbao` JWT audience matching the OpenBao Kubernetes
+auth role, so it is not a valid kube-apiserver credential; the audience is owned by infra
+and is not chart-configurable. The application containers do not mount this token unless
+you explicitly add that mount yourself.
 
 **Example configuration:**
 

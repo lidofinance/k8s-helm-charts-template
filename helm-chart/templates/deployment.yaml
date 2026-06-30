@@ -135,6 +135,7 @@ spec:
               - serviceAccountToken:
                   path: token
                   expirationSeconds: {{ $openbaoTokenExpirationSeconds }}
+                  audience: openbao
         {{- end }}
       {{- end }}
   strategy:
