@@ -2,7 +2,7 @@
 
 ## [1.7.0] - 23-06-2026
 
-- Added: `openbao.serviceAccountToken.audience` (default `openbao`) sets the JWT audience on the projected OpenBao token for Deployments and CronJobs, so it is not a valid kube-apiserver credential. Must match the OpenBao k8s auth role audience; set `""` to opt out.
+- Added: the projected OpenBao token carries a fixed `openbao` JWT audience on Deployments and CronJobs, so it is not a valid kube-apiserver credential. The audience matches the OpenBao k8s auth role and is owned by infra, not chart-configurable.
 
 ## [1.6.1] - 18-06-2026
 

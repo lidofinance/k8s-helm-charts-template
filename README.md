@@ -100,7 +100,6 @@ The following table lists the configurable parameters of the chart and their def
 | `openbao.enabled`               | Enable OpenBao secret injection     | `false`                  |
 | `openbao.annotations`           | OpenBao agent annotations           | `{}`                     |
 | `openbao.serviceAccountToken.volumeName` | Projected token volume for OpenBao agent auth | `openbao-token` |
-| `openbao.serviceAccountToken.audience` | JWT audience on the projected OpenBao token. Must match the OpenBao k8s auth role audience; set `""` to opt out | `openbao` |
 | `cronjobs`                      | List of cronjobs with params      | See values.yaml          |
 
 ### Health Checks
@@ -221,8 +220,10 @@ OpenBao Agent Injector is disabled by default. To enable it:
 
 When OpenBao injection is enabled, the chart keeps `automountServiceAccountToken: false`
 and adds a dedicated projected ServiceAccount token volume for the injected OpenBao
-agent. The application containers do not mount this token unless you explicitly add
-that mount yourself.
+agent. The token carries a fixed `openbao` JWT audience matching the OpenBao Kubernetes
+auth role, so it is not a valid kube-apiserver credential; the audience is owned by infra
+and is not chart-configurable. The application containers do not mount this token unless
+you explicitly add that mount yourself.
 
 **Example configuration:**
 
