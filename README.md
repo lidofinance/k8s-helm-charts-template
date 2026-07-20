@@ -7,6 +7,7 @@ Available templates:
 - `helm-chart/` for application workloads that teams consume as a dependency in their service charts
 - `alerts/` for a shared library chart that renders team `PrometheusRule` resources from parent-chart files
 - `grafana-dashboards/` for a shared library chart that renders team Grafana dashboard `ConfigMap`s from parent-chart files
+- `routes/` for a shared library chart that renders team `AlertmanagerConfig` resources (Alertmanager routing) from parent-chart files
 
 ## Overview
 
@@ -26,6 +27,7 @@ The template includes pre-configured settings for:
 - OpenBao (Vault) Agent Injector for secret management
 - Shared Grafana dashboard rendering helpers for team charts
 - Shared Prometheus alert rule rendering helpers for team charts
+- Shared Alertmanager routing (AlertmanagerConfig) rendering helpers for team charts
 
 ## Prerequisites
 
@@ -43,6 +45,7 @@ The template includes pre-configured settings for:
      helm lint helm-chart/
      helm lint alerts/
      helm lint grafana-dashboards/
+     helm lint routes/
      ```
    - [ ] Test template rendering:
      ```bash
@@ -51,12 +54,15 @@ The template includes pre-configured settings for:
      helm template team-alerts <team-alerts-chart> --values <team-alerts-chart>/values-k8s-<env>.yaml
      helm dependency build <team-grafana-dashboards-chart>
      helm template team-grafana-dashboards <team-grafana-dashboards-chart> --values <team-grafana-dashboards-chart>/values-k8s-<env>.yaml
+     helm dependency build <team-routes-chart>
+     helm template team-routes <team-routes-chart> --values <team-routes-chart>/values-k8s-<env>.yaml
      ```
    - [ ] Validate values:
      ```bash
      helm template lido-app helm-chart/ --values helm-chart/values.yaml
      helm lint alerts/
      helm lint grafana-dashboards/
+     helm lint routes/
      ```
 
 2. **Build and Package**
@@ -65,6 +71,7 @@ The template includes pre-configured settings for:
      helm package helm-chart/
      helm package alerts/
      helm package grafana-dashboards/
+     helm package routes/
      ```
    - [ ] Create index file:
      ```bash

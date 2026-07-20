@@ -6,6 +6,7 @@ on:
       - 'helm-chart/**'
       - 'alerts/**'
       - 'grafana-dashboards/**'
+      - 'routes/**'
       - '.github/workflows/*.yml'
 
 jobs:
@@ -49,6 +50,7 @@ jobs:
           helm lint helm-chart/
           helm lint alerts/
           helm lint grafana-dashboards/
+          helm lint routes/
 
       - name: Run chart-testing (list-changed)
         id: list-changed
@@ -88,6 +90,25 @@ jobs:
           {{ include "lido.alerts.render" . }}
           EOF
 
+          routes_version=$(grep '^version:' routes/Chart.yaml | awk '{print $2}')
+          mkdir -p "${tmp_root}/routes/templates" "${tmp_root}/routes/tests" "${tmp_root}/routes/files"
+          cat > "${tmp_root}/routes/Chart.yaml" <<EOF
+          apiVersion: v2
+          name: routes-consumer-test
+          version: 0.1.0
+          type: application
+          dependencies:
+            - name: routes
+              version: ${routes_version}
+              repository: "file://$(pwd)/routes"
+          EOF
+          cp routes/ci-values.yaml "${tmp_root}/routes/ci-values.yaml"
+          cp routes/tests/alertmanagerconfig_test.yaml "${tmp_root}/routes/tests/alertmanagerconfig_test.yaml"
+          cp routes/files/example-routes.yaml "${tmp_root}/routes/files/example-routes.yaml"
+          cat > "${tmp_root}/routes/templates/alertmanagerconfig.yaml" <<'EOF'
+          {{ include "lido.routes.render" . }}
+          EOF
+
           mkdir -p "${tmp_root}/grafana-dashboards/templates" "${tmp_root}/grafana-dashboards/tests" "${tmp_root}/grafana-dashboards/dashboards"
           cat > "${tmp_root}/grafana-dashboards/Chart.yaml" <<EOF
           apiVersion: v2
@@ -107,8 +128,10 @@ jobs:
           EOF
 
           helm dependency build "${tmp_root}/alerts"
+          helm dependency build "${tmp_root}/routes"
           helm dependency build "${tmp_root}/grafana-dashboards"
 
           helm unittest helm-chart
           helm unittest "${tmp_root}/alerts"
+          helm unittest "${tmp_root}/routes"
           helm unittest "${tmp_root}/grafana-dashboards"

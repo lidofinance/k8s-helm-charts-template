@@ -1,0 +1,22 @@
+alertmanagerConfigs: []
+# Example:
+# alertmanagerConfigs:
+#   - file: files/example-routes.yaml
+#     # Optional overrides:
+#     # name: example-routes
+#     # namespace: team-csm
+#
+# Each file holds an AlertmanagerConfig spec (monitoring.coreos.com/v1alpha1):
+# route/receivers/inhibitRules in camelCase. Receiver credentials must be
+# secretKeySelector references to a Secret in the same namespace (the
+# infra-provisioned `alertmanager-routing` Secret in team-<name>).
+#
+# Consuming charts should define these values at the parent chart root and
+# render the resources with:
+# {{ include "lido.routes.render" . }}
+#
+# Receiver credentials are NOT set here and NOT shipped as Secrets. When infra
+# enables self-routing for the team, the OpenBao agent injector writes the
+# credentials as files into the team's Alertmanager pod and exposes each as an
+# Alertmanager global.*_file; team routes omit the per-receiver credential (e.g.
+# a slackConfigs entry with no apiURL) to inherit it.

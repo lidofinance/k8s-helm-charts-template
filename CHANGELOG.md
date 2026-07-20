@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.0] - 09-07-2026
+
+- Added: new `routes/` library chart. `lido.routes.render` renders team `AlertmanagerConfig` resources from parent-chart files; prometheus-operator merges them ahead of the infra-provided OpsGenie default route. Receiver credentials are not shipped as Secrets: infra injects them into the team Alertmanager pod from OpenBao and exposes each as an Alertmanager `global.*_file`, so team routes omit the per-receiver credential and inherit it.
+
 ## [1.7.0] - 23-06-2026
 
 - Added: the projected OpenBao token carries a fixed `openbao` JWT audience on Deployments and CronJobs, so it is not a valid kube-apiserver credential. The audience matches the OpenBao k8s auth role and is owned by infra, not chart-configurable.

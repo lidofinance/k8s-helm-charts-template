@@ -1,0 +1,50 @@
+suite: Test AlertmanagerConfig template with CI values
+templates:
+  - templates/alertmanagerconfig.yaml
+values:
+  - ../ci-values.yaml
+release:
+  name: test-routes
+  namespace: team-test
+tests:
+  - it: should not render AlertmanagerConfig resources when alertmanagerConfigs are not configured
+    set:
+      alertmanagerConfigs: []
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render an AlertmanagerConfig with derived defaults
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: AlertmanagerConfig
+      - isAPIVersion:
+          of: monitoring.coreos.com/v1alpha1
+      - equal:
+          path: metadata.name
+          value: example-routes
+      - equal:
+          path: metadata.namespace
+          value: team-test
+      - equal:
+          path: spec.route.receiver
+          value: team-slack
+      - equal:
+          path: spec.receivers[0].slackConfigs[0].channel
+          value: "#team-alerts"
+      # Credential is omitted so Alertmanager inherits global.slack_api_url_file.
+      - notExists:
+          path: spec.receivers[0].slackConfigs[0].apiURL
+
+  - it: should preserve explicit name and namespace
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: AlertmanagerConfig
+      - equal:
+          path: metadata.name
+          value: explicit-routes
+      - equal:
+          path: metadata.namespace
+          value: custom-namespace
