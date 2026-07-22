@@ -133,6 +133,8 @@ Pod Disruption Budget is enabled by default with:
 
 It should be configured on a per-app per-env basis. For example apps in critical should probably have minAvailable >=1. But there are some exceptions like singlton apps. Keep in mind that you can't set up both maxUnavailable and minAvailable.
 
+Set exactly one of `maxUnavailable` or `minAvailable`; setting both makes `helm template` fail (since the chart default is `maxUnavailable: 1`, switching to `minAvailable` requires also setting `maxUnavailable: null`). The PodDisruptionBudget is auto-suppressed when the effective max replicas — the max of `replicas` and, when HPA is enabled, `HorizontalPodAutoscaler.maxReplicas` — is `<= 1`, so a single-pod chart renders no PDB even with the default `enabled: true`.
+
 ### Horizontal Pod Autoscaler
 
 Horizontal Pod Autoscaler is enabled by default with:
@@ -226,8 +228,10 @@ OpenBao Agent Injector is disabled by default. To enable it:
 
 When OpenBao injection is enabled, the chart keeps `automountServiceAccountToken: false`
 and adds a dedicated projected ServiceAccount token volume for the injected OpenBao
-agent. The application containers do not mount this token unless you explicitly add
-that mount yourself.
+agent. The token carries a fixed `openbao` JWT audience matching the OpenBao Kubernetes
+auth role, so it is not a valid kube-apiserver credential; the audience is owned by infra
+and is not chart-configurable. The application containers do not mount this token unless
+you explicitly add that mount yourself.
 
 **Example configuration:**
 

@@ -1,8 +1,25 @@
 # Changelog
 
-## [1.5.7] - 02-06-2026
+## [1.7.1] - 21-07-2026
 
 - Added: `defaultEmptyDirSizeLimit` (default `1Gi`). Any `emptyDir` volume in `volumes` that does not set its own `sizeLimit` now renders with this default on both Deployment and CronJob templates. The cluster enforces the `require-emptydir-sizelimit` Kyverno policy, which rejects `emptyDir` volumes without a `sizeLimit`; this keeps rendered manifests compliant. Volumes that already set `sizeLimit`, and non-`emptyDir` volumes, are unchanged.
+
+## [1.7.0] - 23-06-2026
+
+- Added: the projected OpenBao token carries a fixed `openbao` JWT audience on Deployments and CronJobs, so it is not a valid kube-apiserver credential. The audience matches the OpenBao k8s auth role and is owned by infra, not chart-configurable.
+
+## [1.6.1] - 18-06-2026
+
+- Re-release of 1.6.0 with no functional changes. The 1.6.0 tag was consumed by a failed release run and cannot be reused (immutable releases), so the probe-guard change ships as 1.6.1.
+
+## [1.6.0] - 17-06-2026
+
+- Added: `helm template` now fails fast when a Deployment container is missing `readinessProbe` or `livenessProbe`, instead of rendering a probe-less container rejected at Kyverno admission time. `startupProbe` remains optional.
+
+## [1.5.7] - 04-06-2026
+
+- Added: PodDisruptionBudget is auto-suppressed when the workload's effective max replicas is <= 1 (i.e. `replicas: 1` AND either HPA disabled or HPA `maxReplicas <= 1`). Prevents rendering ineffective PDBs for single-pod charts. No consumer values changes are required.
+- Added: `helm template` now fails fast when both `PodDisruptionBudget.maxUnavailable` and `PodDisruptionBudget.minAvailable` are set (whenever the PDB is enabled, regardless of replica count), instead of producing an invalid PDB spec rejected at admission time.
 
 ## [1.5.6] - 19-05-2026
 

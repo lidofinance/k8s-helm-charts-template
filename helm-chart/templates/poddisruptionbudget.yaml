@@ -1,4 +1,17 @@
-{{- if .Values.PodDisruptionBudget.enabled }}
+{{- /* Effective max pods = max of replicas and HPA maxReplicas (when HPA enabled). */ -}}
+{{- $hpa := .Values.HorizontalPodAutoscaler | default dict -}}
+{{- $hpaMax := 0 -}}
+{{- if $hpa.enabled -}}
+{{-   $hpaMax = int (default 0 $hpa.maxReplicas) -}}
+{{- end -}}
+{{- $replicas := int (default 1 .Values.replicas) -}}
+{{- $effectiveMax := max $replicas $hpaMax -}}
+{{- /* Setting both keys is a values bug; fail at render time instead of at the API. */ -}}
+{{- if and .Values.PodDisruptionBudget.enabled .Values.PodDisruptionBudget.maxUnavailable .Values.PodDisruptionBudget.minAvailable -}}
+{{- fail "PodDisruptionBudget: set exactly one of maxUnavailable or minAvailable, not both" -}}
+{{- end -}}
+{{- /* Skip the PDB entirely when the workload can never run more than one pod. */ -}}
+{{- if and .Values.PodDisruptionBudget.enabled (gt $effectiveMax 1) }}
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
