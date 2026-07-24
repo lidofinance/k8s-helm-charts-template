@@ -7,9 +7,7 @@ alertmanagerConfigs: []
 #     # namespace: team-csm
 #
 # Each file holds an AlertmanagerConfig spec (monitoring.coreos.com/v1alpha1):
-# route/receivers/inhibitRules in camelCase. Receiver credentials must be
-# secretKeySelector references to a Secret in the same namespace (the
-# infra-provisioned `alertmanager-routing` Secret in team-<name>).
+# route/receivers/inhibitRules in camelCase.
 #
 # Consuming charts should define these values at the parent chart root and
 # render the resources with:
