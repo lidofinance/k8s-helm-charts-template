@@ -8,6 +8,9 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   labels:
     {{- include "specific.labels" $ | nindent 4 }}
+    {{- with include "lido.userLabels" (dict "root" $ "extra" .labels) }}
+    {{- . | nindent 4 }}
+    {{- end }}
 spec:
   accessModes:
     {{- toYaml .accessModes | nindent 4 }}

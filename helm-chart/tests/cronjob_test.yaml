@@ -122,3 +122,14 @@ tests:
                     path: token
                     expirationSeconds: 7200
                     audience: openbao
+  - it: should render user labels on cronjob metadata and job pod template
+    set:
+      labels:
+        cost-center: infra
+    asserts:
+      - equal:
+          path: metadata.labels["cost-center"]
+          value: infra
+      - equal:
+          path: spec.jobTemplate.spec.template.metadata.labels["cost-center"]
+          value: infra

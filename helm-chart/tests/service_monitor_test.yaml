@@ -17,8 +17,18 @@ tests:
       - equal:
           path: metadata.namespace
           value: test-namespace
-      # ─────────────── template labels ───────────────
+      # ─────────────── labels ───────────────
       - isNotEmpty:
-          path: spec.template.metadata.labels
+          path: metadata.labels
       - isNotEmpty:
           path: spec.selector.matchLabels
+  - it: should render user labels in metadata but not in the selector
+    set:
+      labels:
+        cost-center: infra
+    asserts:
+      - equal:
+          path: metadata.labels["cost-center"]
+          value: infra
+      - notExists:
+          path: spec.selector.matchLabels["cost-center"]

@@ -1,4 +1,4 @@
-# Lido Finance Helm Charts Template
+# Lid Finance Helm Charts Template
 
 This repository contains a Helm chart template designed specifically for Lido Finance applications. It provides a standardized way to deploy and manage Lido Finance services on Kubernetes clusters.
 
@@ -94,6 +94,8 @@ The following table lists the configurable parameters of the chart and their def
 | `serviceAccount.automountServiceAccountToken` | Automount default Kubernetes API token | `false`       |
 | `pvc.enabled`                   | Enable or disable PVC               | `false`                  |
 | `pvcs`                          | List of PVCs, see values.yaml       | See values.yaml          |
+| `labels`                        | Extra labels on all rendered objects | `{}`                    |
+| `pvcs[].labels`                 | Extra labels for one PVC            | `nil`                    |
 | `containers`                    | List of containers with params      | See values.yaml          |
 | `containers[].command`          | Override container entrypoint       | `nil`                    |
 | `servicemonitor.endpoints`      | List of ServiceMonitors             | See values.yaml          |
@@ -149,6 +151,47 @@ PersistentVolumeClaim is disabled by default. To enable it:
 
 1. Set `pvc.enabled` to `true`
 2. Set list of PVCs with params under the `pvcs` value.
+
+### Extra labels
+
+Two values add user-defined labels to rendered objects:
+
+- `labels` (map) - added to the metadata of every object the chart renders
+  (Deployment, CronJob, Service, ServiceMonitor, Ingress, PVC), including the
+  Deployment and CronJob pod templates.
+- `pvcs[].labels` (map) - extra labels for one PVC, merged over the global
+  `labels` map. A per-PVC value wins; setting a key to `null` or `""` removes
+  a globally set label from that PVC.
+
+Guardrails: keys that collide with chart-managed labels (`team`, `app`, `env`,
+`app.kubernetes.io/*`, `helm.sh/chart`, `resource`) fail `helm template`, as do
+label keys or values Kubernetes would reject at admission time.
+
+Keep in mind that changing `labels` changes the pod-template labels, so the
+next `helm upgrade` rolls all pods of the Deployment.
+
+The main use case is Velero backup opt-in: labelling a PVC with
+`backup.lido.fi/schedule: <name>` puts it into the team's Velero backup
+schedule of that name (schedules are declared per team in the k8s-infra
+inventory; typical names are `hourly`, `daily`, `weekly`):
+
+```yaml
+pvcs:
+  - name: app-data
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    storageClass: "longhorn-standard"
+    labels:
+      backup.lido.fi/schedule: daily
+```
+
+Set the backup label per PVC, not in the global `labels` map.
+
+Note: only PVC data should be backed for DR (disaster recovery) scenario.
+You may want to include other objects only if you need to restore them
+into another namespace manually. (Practically: put backup schedule labels only
+on PVs). In normal scenario, every other object will be restored by ArgoCD.
 
 ### Read-only root file system
 

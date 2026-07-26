@@ -25,9 +25,9 @@ tests:
       - equal:
           path: metadata.namespace
           value: test-namespace
-      # ─────────────── template labels ───────────────
+      # ─────────────── labels ───────────────
       - isNotEmpty:
-          path: spec.template.metadata.labels
+          path: metadata.labels
       # ─────────────── spec ───────────────
       - equal:
           path: spec.storageClassName
@@ -40,3 +40,52 @@ tests:
       - equal:
           path: spec.resources.requests.storage
           value: 100Mi
+  - it: should merge per-pvc labels over global labels
+    set:
+      labels:
+        backup.lido.fi/schedule: daily
+        cost-center: infra
+      pvcs:
+        - name: data
+          accessModes:
+            - ReadWriteOnce
+          size: 100Mi
+          labels:
+            backup.lido.fi/schedule: weekly
+        - name: cache
+          accessModes:
+            - ReadWriteOnce
+          size: 50Mi
+          labels:
+            backup.lido.fi/schedule: ""
+    asserts:
+      # per-PVC value wins over the global one
+      - equal:
+          path: metadata.labels["backup.lido.fi/schedule"]
+          value: weekly
+        documentIndex: 0
+      - equal:
+          path: metadata.labels["cost-center"]
+          value: infra
+        documentIndex: 0
+      # empty per-PVC value removes the globally set key
+      - notExists:
+          path: metadata.labels["backup.lido.fi/schedule"]
+        documentIndex: 1
+      - equal:
+          path: metadata.labels["cost-center"]
+          value: infra
+        documentIndex: 1
+  - it: should render per-pvc labels without global labels
+    set:
+      pvcs:
+        - name: data
+          accessModes:
+            - ReadWriteOnce
+          size: 100Mi
+          labels:
+            backup.lido.fi/schedule: daily
+    asserts:
+      - equal:
+          path: metadata.labels["backup.lido.fi/schedule"]
+          value: daily

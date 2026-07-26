@@ -2,6 +2,17 @@ name: OVERRIDE-ME
 team: OVERRIDE-ME
 env: OVERRIDE-ME
 
+# Extra labels added to the metadata (and pod templates) of every object the
+# chart renders. Never added to selectors. Keys that collide with chart-managed
+# labels (team, app, env, app.kubernetes.io/*, ...) fail the render, as do
+# label keys/values Kubernetes would reject.
+# Note: changing these changes pod-template labels, so the next upgrade
+# triggers a rolling restart of the Deployment.
+# Do NOT put the Velero selection label (backup.lido.fi/schedule) here: it
+# would make the backup capture every labelled object (Deployment, Service,
+# ...), not just the volumes. Use pvcs[].labels for it — see the pvcs example.
+labels: {}
+
 # Replica count for default deployment
 replicas: 1
 
@@ -132,6 +143,12 @@ pvc:
 #       - ReadWriteMany
 #     size: 1Gi
 #     storageClass: "longhorn-standard"
+#     # Optional extra labels for this PVC, merged over the global `labels`
+#     # map (per-PVC value wins; null or "" removes a globally set key).
+#     # backup.lido.fi/schedule opts the volume into the team's Velero backup
+#     # schedule of that name (declared in k8s-infra team inventory).
+#     labels:
+#       backup.lido.fi/schedule: daily
 
 # Example volume
 # volumes:
