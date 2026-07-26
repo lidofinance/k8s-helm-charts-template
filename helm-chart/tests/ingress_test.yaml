@@ -52,3 +52,11 @@ tests:
       - equal:
           path: spec.tls[0].secretName
           value: test-tls
+  - it: should render user labels in metadata
+    set:
+      labels:
+        cost-center: infra
+    asserts:
+      - equal:
+          path: metadata.labels["cost-center"]
+          value: infra

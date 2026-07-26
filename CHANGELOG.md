@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.0] - 26-07-2026
+
+- Added: `labels` (global map) and `pvcs[].labels` (per-PVC map) render user-defined labels into the metadata and pod templates of chart objects. Per-PVC keys win over global ones; `null`/`""` removes a globally set key from that PVC. Chart-managed label keys and bad keys/values (the one Kubernetes would reject) fail at `helm template` time. Primary use case: `backup.lido.fi/schedule: <name>` on a PVC opts its volume into the team's Velero backup schedule. Note: setting or changing `labels` alters pod-template labels, so the first upgrade after the change performs a rolling restart.
+- Fixed: two test assertions that checked `spec.template.metadata.labels` on PVC and ServiceMonitor (paths that don't exist on those kinds) were passing vacuously; they now assert real paths.
+
 ## [1.7.0] - 23-06-2026
 
 - Added: the projected OpenBao token carries a fixed `openbao` JWT audience on Deployments and CronJobs, so it is not a valid kube-apiserver credential. The audience matches the OpenBao k8s auth role and is owned by infra, not chart-configurable.

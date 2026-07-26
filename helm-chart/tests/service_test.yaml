@@ -57,3 +57,13 @@ tests:
       - equal:
           path: spec.ports[1].targetPort
           value: 9100
+  - it: should render user labels in metadata but not in the selector
+    set:
+      labels:
+        cost-center: infra
+    asserts:
+      - equal:
+          path: metadata.labels["cost-center"]
+          value: infra
+      - notExists:
+          path: spec.selector["cost-center"]

@@ -11,6 +11,9 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   labels:
     {{- include "specific.labels" $ | nindent 4 }}
+    {{- with include "lido.userLabels" (dict "root" $) }}
+    {{- . | nindent 4 }}
+    {{- end }}
   {{- with $cronjob.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -39,6 +42,9 @@ spec:
         metadata:
           labels:
             {{- include "specific.labels" $ | nindent 12 }}
+            {{- with include "lido.userLabels" (dict "root" $) }}
+            {{- . | nindent 12 }}
+            {{- end }}
           {{- if $.Values.openbao.enabled }}
           annotations:
             vault.hashicorp.com/agent-pre-populate-only : "true"

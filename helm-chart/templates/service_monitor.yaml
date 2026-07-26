@@ -6,6 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "specific.labels" . | nindent 4 }}
+    {{- with include "lido.userLabels" (dict "root" $) }}
+    {{- . | nindent 4 }}
+    {{- end }}
 spec:
   endpoints:
     {{- range .Values.servicemonitor.endpoints }}
