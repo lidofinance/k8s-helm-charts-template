@@ -1,4 +1,4 @@
-{{- define "lido.routes.render" -}}
+{{- define "lido.alertmanagerRoutes.render" -}}
 {{- $root := . }}
 {{- range $config := $root.Values.alertmanagerConfigs }}
 {{- $filePath := required "alertmanagerConfigs[].file is required" $config.file }}

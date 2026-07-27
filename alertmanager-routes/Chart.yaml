@@ -1,5 +1,5 @@
 apiVersion: v2
-name: routes
+name: alertmanager-routes
 type: library
 description: Shared helpers to render Alertmanager routing (AlertmanagerConfig) from a parent chart.
 maintainers:

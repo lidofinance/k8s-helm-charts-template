@@ -11,7 +11,7 @@ alertmanagerConfigs: []
 #
 # Consuming charts should define these values at the parent chart root and
 # render the resources with:
-# {{ include "lido.routes.render" . }}
+# {{ include "lido.alertmanagerRoutes.render" . }}
 #
 # Receiver credentials are NOT set here and NOT shipped as Secrets. When infra
 # enables self-routing for the team, the OpenBao agent injector writes the

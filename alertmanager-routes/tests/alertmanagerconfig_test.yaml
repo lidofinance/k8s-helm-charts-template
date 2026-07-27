@@ -4,7 +4,7 @@ templates:
 values:
   - ../ci-values.yaml
 release:
-  name: test-routes
+  name: test-alertmanager-routes
   namespace: team-test
 tests:
   - it: should not render AlertmanagerConfig resources when alertmanagerConfigs are not configured

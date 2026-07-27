@@ -7,7 +7,7 @@ Available templates:
 - `helm-chart/` for application workloads that teams consume as a dependency in their service charts
 - `alerts/` for a shared library chart that renders team `PrometheusRule` resources from parent-chart files
 - `grafana-dashboards/` for a shared library chart that renders team Grafana dashboard `ConfigMap`s from parent-chart files
-- `routes/` for a shared library chart that renders team `AlertmanagerConfig` resources (Alertmanager routing) from parent-chart files
+- `alertmanager-routes/` for a shared library chart that renders team `AlertmanagerConfig` resources (Alertmanager routing) from parent-chart files
 
 ## Overview
 
@@ -45,7 +45,7 @@ The template includes pre-configured settings for:
      helm lint helm-chart/
      helm lint alerts/
      helm lint grafana-dashboards/
-     helm lint routes/
+     helm lint alertmanager-routes/
      ```
    - [ ] Test template rendering:
      ```bash
@@ -54,15 +54,15 @@ The template includes pre-configured settings for:
      helm template team-alerts <team-alerts-chart> --values <team-alerts-chart>/values-k8s-<env>.yaml
      helm dependency build <team-grafana-dashboards-chart>
      helm template team-grafana-dashboards <team-grafana-dashboards-chart> --values <team-grafana-dashboards-chart>/values-k8s-<env>.yaml
-     helm dependency build <team-routes-chart>
-     helm template team-routes <team-routes-chart> --values <team-routes-chart>/values-k8s-<env>.yaml
+     helm dependency build <team-alertmanager-routes-chart>
+     helm template team-alertmanager-routes <team-alertmanager-routes-chart> --values <team-alertmanager-routes-chart>/values-k8s-<env>.yaml
      ```
    - [ ] Validate values:
      ```bash
      helm template lido-app helm-chart/ --values helm-chart/values.yaml
      helm lint alerts/
      helm lint grafana-dashboards/
-     helm lint routes/
+     helm lint alertmanager-routes/
      ```
 
 2. **Build and Package**
@@ -71,7 +71,7 @@ The template includes pre-configured settings for:
      helm package helm-chart/
      helm package alerts/
      helm package grafana-dashboards/
-     helm package routes/
+     helm package alertmanager-routes/
      ```
    - [ ] Create index file:
      ```bash
