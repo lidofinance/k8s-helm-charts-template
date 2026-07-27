@@ -1,7 +1,5 @@
-# AlertmanagerConfig spec (monitoring.coreos.com/v1alpha1). Receivers OMIT their
-# credential: the credential is injected into the Alertmanager pod as a file and
-# exposed as an Alertmanager global.*_file (e.g. global.slack_api_url_file), so a
-# credential-less slackConfigs entry inherits it. No Secret is referenced.
+# AlertmanagerConfig spec. Omit the per-receiver credential (slackConfigs with no
+# apiURL) to inherit the infra-injected global.*_file; no Secret is referenced.
 route:
   receiver: team-slack
   groupBy:
