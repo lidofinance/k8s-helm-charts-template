@@ -2,9 +2,9 @@
 
 ## [1.8.0] - 21-07-2026
 
-- Added: new `alertmanager-routes/` library chart. `lido.alertmanagerRoutes.render` renders team `AlertmanagerConfig` resources from parent-chart files; prometheus-operator merges them into the team Alertmanager, composing with the infra-provided OpsGenie catch-all. Team receiver credentials are not shipped as Secrets: infra injects them into the team Alertmanager from OpenBao as files. Slack and SMTP inherit an Alertmanager `global.*_file` (a route omits the credential to inherit it); Telegram is referenced per-receiver as `botTokenFile`.
+- Added: new `alertmanager-routes/` library chart. `lido.alertmanagerRoutes.render` renders team `AlertmanagerConfig` resources from parent-chart files; prometheus-operator merges them into the team Alertmanager, composing with the infra-provided OpsGenie catch-all. Team receiver credentials are not shipped as Secrets: infra injects them into the team Alertmanager from OpenBao as files. Slack inherits an Alertmanager `global.*_file` (a route omits the credential to inherit it); Telegram is referenced per-receiver as `botTokenFile`.
 
-- Added: `defaultEmptyDirSizeLimit` (default `1Gi`). Any `emptyDir` volume in `volumes` that does not set its own `sizeLimit` now renders with this default on both Deployment and CronJob templates. The cluster enforces the `require-emptydir-sizelimit` Kyverno policy, which rejects `emptyDir` volumes without a `sizeLimit`; this keeps rendered manifests compliant. Volumes that already set `sizeLimit`, and non-`emptyDir` volumes, are unchanged.
+- Added: `defaultEmptyDirSizeLimit` (default `1Gi`). Any `emptyDir` volume in `volumes` that does not set its own `sizeLimit` now renders with this default on both Deployment and CronJob templates. The `require-emptydir-sizelimit` Kyverno policy (Audit) flags `emptyDir` volumes without a `sizeLimit`; this default keeps rendered manifests off that report. Volumes that already set `sizeLimit`, and non-`emptyDir` volumes, are unchanged.
 
 ## [1.7.0] - 23-06-2026
 

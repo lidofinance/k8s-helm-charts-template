@@ -163,9 +163,9 @@ Please keep in mind that `readOnlyRootFilesystem: true` will be enforced in the 
 
 ### emptyDir volumes
 
-The cluster enforces the `require-emptydir-sizelimit` Kyverno policy: every `emptyDir`
-volume must declare a `sizeLimit`, or the Pod is rejected at admission. To keep
-manifests compliant by default, any `emptyDir` under `volumes` that does not set its
+The `require-emptydir-sizelimit` Kyverno policy (Audit) flags any `emptyDir` volume
+without a `sizeLimit`. To keep manifests off that report by default, any `emptyDir`
+under `volumes` that does not set its
 own `sizeLimit` is rendered with `defaultEmptyDirSizeLimit` (default `1Gi`). Set a
 per-volume `sizeLimit` to override, or tune `defaultEmptyDirSizeLimit` for the release.
 
@@ -449,9 +449,66 @@ dependencies:
 
 Team Prometheus stacks discover these rules from namespaces labeled with `app.kubernetes.io/team`, which is how the current `k8s-infra/l2` setup scopes team monitoring.
 
+## Alertmanager Routes Template
+
+Use `alertmanager-routes/` as a dependency in a team chart such as `csm-alertmanager-routes` in the team `helm-charts-*` repositories.
+
+The parent team chart keeps:
+
+- `files/*.yaml`
+- `values-k8s-*.yaml`
+- a thin wrapper template that calls the shared helper
+
+Each route file holds an `AlertmanagerConfig` spec: the `route` and `receivers` keys in camelCase. prometheus-operator merges every team `AlertmanagerConfig` into the team Alertmanager, so a team writes and changes its own routing without an infra deploy.
+
+To reduce boilerplate, the template also provides safe defaults:
+
+- `name` defaults to the route file basename without `.yaml` or `.routes.yaml`
+- `namespace` defaults to the Helm release namespace
+
+### What infra provides and what teams bring
+
+Infra owns the base routing on each team Alertmanager and it stays in place regardless of team routing: a matchers-less catch-all that pages the team's own OpsGenie, and a Watchdog deadman that reports to the SRE OpsGenie.
+
+Teams bring their own routes and receivers. A team route is evaluated first and can notify Slack or Telegram; any alert a team does not route falls through to the infra catch-all. Teams do not manage the OpsGenie or deadman routing.
+
+### Credentials
+
+Receiver credentials are never set in the chart and never shipped as a Secret. Infra injects them into the team Alertmanager from OpenBao as files.
+
+- Slack: omit the per-receiver `apiURL`; the route inherits the infra-injected Alertmanager `global.slack_api_url_file`.
+- Telegram: set `botTokenFile` to `/vault/secrets/telegram`, the fixed path infra injects the token to. Telegram has no global, so the file is referenced per receiver.
+
+Example values:
+
+```yaml
+alertmanagerConfigs:
+  - file: files/example-routes.yaml
+```
+
+Example consumer chart:
+
+```yaml
+apiVersion: v2
+name: alertmanager-routes
+version: 1.0.0
+type: application
+dependencies:
+  - name: alertmanager-routes
+    alias: shared-alertmanager-routes
+    version: 1.8.0
+    repository: "oci://ghcr.io/lidofinance/helm-charts"
+```
+
+```yaml
+{{ include "lido.alertmanagerRoutes.render" . }}
+```
+
+Render the `AlertmanagerConfig` into the team namespace. The team Alertmanager selects it through the namespace's `app.kubernetes.io/team` label, the same scoping used for team alert rules.
+
 ## ArgoCD
 
-Teams should register the consumer dashboards and alerts charts alongside their application charts in `apps/apps.yaml`. Example:
+Teams should register the consumer dashboards, alerts, and alertmanager-routes charts alongside their application charts in `apps/apps.yaml`. Example:
 
 ```yaml
 - name: csm-alerts
@@ -465,9 +522,15 @@ Teams should register the consumer dashboards and alerts charts alongside their 
   chartPath: csm-grafana-dashboards
   repoURL: https://github.com/lidofinance/helm-charts-csm.git
   revision: "main"
+
+- name: csm-alertmanager-routes
+  type: helm
+  chartPath: csm-alertmanager-routes
+  repoURL: https://github.com/lidofinance/helm-charts-csm.git
+  revision: "main"
 ```
 
-Set the ArgoCD destination namespace to the team namespace so the rendered `PrometheusRule` and dashboard ConfigMaps are picked up by the team metrics and dashboards stacks automatically.
+Set the ArgoCD destination namespace to the team namespace so the rendered `PrometheusRule`, dashboard ConfigMaps, and `AlertmanagerConfig` are picked up by the team metrics, dashboards, and Alertmanager stacks automatically.
 
 # Future Improvements
 

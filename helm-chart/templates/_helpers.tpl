@@ -16,8 +16,8 @@ env: {{ .Values.env }}
 
 {{/*
 Render a volumes list, defaulting a sizeLimit onto any emptyDir that omits one.
-The cluster Kyverno policy require-emptydir-sizelimit (Enforce) rejects emptyDir
-volumes without a sizeLimit, so this guarantees rendered manifests comply.
+The cluster Kyverno policy require-emptydir-sizelimit (Audit) flags emptyDir
+volumes without a sizeLimit, so this keeps rendered manifests off that report.
 Usage: include "chart.renderVolumes" (dict "volumes" .Values.volumes "default" .Values.defaultEmptyDirSizeLimit)
 */}}
 {{- define "chart.renderVolumes" -}}
