@@ -6,6 +6,7 @@ on:
       - 'helm-chart/**'
       - 'alerts/**'
       - 'grafana-dashboards/**'
+      - 'blackbox-checks/**'
       - '.github/workflows/*.yml'
 
 jobs:
@@ -49,6 +50,7 @@ jobs:
           helm lint helm-chart/
           helm lint alerts/
           helm lint grafana-dashboards/
+          helm lint blackbox-checks/
 
       - name: Run chart-testing (list-changed)
         id: list-changed
@@ -68,6 +70,7 @@ jobs:
 
           alerts_version=$(grep '^version:' alerts/Chart.yaml | awk '{print $2}')
           dashboards_version=$(grep '^version:' grafana-dashboards/Chart.yaml | awk '{print $2}')
+          blackbox_version=$(grep '^version:' blackbox-checks/Chart.yaml | awk '{print $2}')
           tmp_root=$(mktemp -d)
 
           mkdir -p "${tmp_root}/alerts/templates" "${tmp_root}/alerts/tests" "${tmp_root}/alerts/files"
@@ -106,9 +109,28 @@ jobs:
           {{ include "lido.grafanaDashboards.render" . }}
           EOF
 
+          mkdir -p "${tmp_root}/blackbox-checks/templates" "${tmp_root}/blackbox-checks/tests"
+          cat > "${tmp_root}/blackbox-checks/Chart.yaml" <<EOF
+          apiVersion: v2
+          name: blackbox-checks-consumer-test
+          version: 0.1.0
+          type: application
+          dependencies:
+            - name: blackbox-checks
+              version: ${blackbox_version}
+              repository: "file://$(pwd)/blackbox-checks"
+          EOF
+          cp blackbox-checks/ci-values.yaml "${tmp_root}/blackbox-checks/ci-values.yaml"
+          cp blackbox-checks/tests/scrapeconfig_test.yaml "${tmp_root}/blackbox-checks/tests/scrapeconfig_test.yaml"
+          cat > "${tmp_root}/blackbox-checks/templates/scrapeconfig.yaml" <<'EOF'
+          {{ include "lido.blackbox.render" . }}
+          EOF
+
           helm dependency build "${tmp_root}/alerts"
           helm dependency build "${tmp_root}/grafana-dashboards"
+          helm dependency build "${tmp_root}/blackbox-checks"
 
           helm unittest helm-chart
           helm unittest "${tmp_root}/alerts"
           helm unittest "${tmp_root}/grafana-dashboards"
+          helm unittest "${tmp_root}/blackbox-checks"

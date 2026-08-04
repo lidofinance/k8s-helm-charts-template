@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.0] - 04-08-2026
+
+- Added: new `blackbox-checks` library chart. Renders prometheus-operator `ScrapeConfig` resources for blackbox-exporter probes from a simple `checks:` values list; the sensor fan-out uses file_sd files from the platform-managed `blackbox-sensors` ConfigMap mount. Validation of the legacy blackbox-checks contract (name/module protocol prefixes, sensitivity/severity enums, interval <= 60s, forbidden scrape timeout, reserved labels, duplicate names) fails at template time. No changes to the other charts; version bump is lockstep-only.
+
 ## [1.7.0] - 23-06-2026
 
 - Added: the projected OpenBao token carries a fixed `openbao` JWT audience on Deployments and CronJobs, so it is not a valid kube-apiserver credential. The audience matches the OpenBao k8s auth role and is owned by infra, not chart-configurable.
