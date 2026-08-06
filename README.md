@@ -268,9 +268,49 @@ containers:
         exec nginx -g 'daemon off;'
 ```
 
+**Rotating a secret (redeploy via Git — the recommended way)**
+
+Rotation needs no ArgoCD restart button and no pipeline. Your apps track `main`
+of your team repo with automated sync, so:
+
+1. Write the new secret value to OpenBao. Never to git or `values-*.yaml`.
+2. Merge a commit that bumps a rotation annotation in your chart's
+   `values-k8s-<env>.yaml`:
+
+```yaml
+openbao:
+  enabled: true
+  annotations:
+    # Bump this timestamp after writing a new secret version to OpenBao.
+    lido.fi/secrets-rotated-at: "2026-08-06T11:41:37Z"
+    # ... other annotations unchanged ...
+```
+
+Everything under `openbao.annotations` is rendered into the pod template, so the
+bump changes the pod template hash and Kubernetes performs a normal rolling
+restart (honoring `maxSurge`/`maxUnavailable` and the PDB). With
+`agent-pre-populate: "true"` the agent injects the new value before the
+application starts.
+
+We prefer this over the ArgoCD restart button in every environment, dev
+included: the button fights ArgoCD's self-heal, while the Git bump *is* the
+desired state — reviewed, attributable through `git log`, and identical in dev,
+staging, and prod.
+
+Notes:
+
+- `openbao.annotations` is the values-controlled path into the pod template.
+  `deployment.annotations` lands on the Deployment object's metadata and does
+  **not** restart pods; there is no separate `podAnnotations` key.
+- Write the secret to OpenBao **before** merging the bump — the agent injects
+  whatever is current at pod start.
+- Multi-alias charts: bump the annotation under each alias that consumes the
+  rotated secret. Aliases render independent Deployments.
+- CronJob pods pick up the new secret automatically on their next scheduled run.
+
 **Optional: Reload application on secret update**
 
-To reload your application when secrets are updated, add the reload command annotation:
+If your application can re-read its secrets at runtime, you can instead add the reload command annotation:
 
 ```yaml
 openbao:

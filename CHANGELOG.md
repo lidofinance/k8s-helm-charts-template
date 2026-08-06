@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.7.1] - 06-08-2026
+
+- Docs: documented redeploy-based secret rotation as the recommended approach — write the new value to OpenBao, then merge a bump of a `lido.fi/secrets-rotated-at` annotation under `openbao.annotations` in the team repo's `values-k8s-<env>.yaml`; the pod-template hash change triggers a rolling restart and the pre-populate agent injects the new value at startup. README and the values.yaml example updated; no template changes. Version bump is lockstep-only for `alerts` and `grafana-dashboards`.
+
 ## [1.7.0] - 23-06-2026
 
 - Added: the projected OpenBao token carries a fixed `openbao` JWT audience on Deployments and CronJobs, so it is not a valid kube-apiserver credential. The audience matches the OpenBao k8s auth role and is owned by infra, not chart-configurable.

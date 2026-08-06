@@ -71,6 +71,10 @@ openbao:
   #     {{`export `}}{{`{{ $k }}`}}{{`="{{ $v }}"`}}
   #     {{`{{ end -}}`}}
   #     {{`{{- end -}}`}}
+  # Secret rotation: bump this timestamp after writing a new secret version to
+  # OpenBao — it changes the pod template hash, so the automated sync rolls the
+  # pods and the agent injects the new value before the app starts.
+  #   lido.fi/secrets-rotated-at: "2026-08-06T11:41:37Z"
   # Optional: Command to reload application after secrets update
   #   vault.hashicorp.com/agent-inject-command-app: |
   #     kill -HUP $(pidof nginx)
