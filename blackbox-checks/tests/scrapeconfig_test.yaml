@@ -1,0 +1,237 @@
+suite: Test ScrapeConfig template with CI values
+templates:
+  - templates/scrapeconfig.yaml
+values:
+  - ../ci-values.yaml
+release:
+  name: test-blackbox-checks
+  namespace: team-test
+tests:
+  - it: should not render ScrapeConfig resources when checks are not configured
+    set:
+      checks: []
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render a ScrapeConfig per check with derived fields
+    asserts:
+      - hasDocuments:
+          count: 2
+
+  - it: should render the http check with sensor fan-out and relabelings
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: ScrapeConfig
+      - equal:
+          path: metadata.name
+          value: http-example.testnet.fi
+      - equal:
+          path: metadata.namespace
+          value: team-test
+      - equal:
+          path: spec.metricsPath
+          value: /probe
+      - equal:
+          path: spec.scrapeInterval
+          value: 10s
+      - equal:
+          path: spec.params.module[0]
+          value: http_2xx_redir_cookie
+      - equal:
+          path: spec.params.target[0]
+          value: https://example.testnet.fi
+      - equal:
+          path: spec.fileSDConfigs[0].files[0]
+          value: /etc/prometheus/configmaps/blackbox-sensors/http-*.yml
+      - contains:
+          path: spec.relabelings
+          content:
+            targetLabel: job
+            replacement: http_example.testnet.fi
+      - contains:
+          path: spec.relabelings
+          content:
+            targetLabel: sensitivity
+            replacement: high
+      - contains:
+          path: spec.relabelings
+          content:
+            targetLabel: severity
+            replacement: major
+      - contains:
+          path: spec.relabelings
+          content:
+            targetLabel: env
+            replacement: nonprod
+      - contains:
+          path: spec.relabelings
+          content:
+            targetLabel: component
+            replacement: web
+
+  - it: should derive the sensor file glob from the check protocol and apply defaults
+    documentIndex: 1
+    asserts:
+      - equal:
+          path: metadata.name
+          value: dns-example.testnet.fi
+      - equal:
+          path: spec.fileSDConfigs[0].files[0]
+          value: /etc/prometheus/configmaps/blackbox-sensors/dns-*.yml
+      - contains:
+          path: spec.relabelings
+          content:
+            targetLabel: sensitivity
+            replacement: medium
+      - contains:
+          path: spec.relabelings
+          content:
+            targetLabel: severity
+            replacement: normal
+      - notExists:
+          path: spec.scrapeInterval
+
+  - it: should fail on a check name without an allowed protocol prefix
+    set:
+      checks:
+        - name: smtp_foo
+          module: http_2xx
+          target: https://x
+    asserts:
+      - failedTemplate:
+          errorPattern: 'check name "smtp_foo" must be <proto>_<host>'
+
+  - it: should fail on a check name with more than one underscore
+    set:
+      checks:
+        - name: http_foo_bar
+          module: http_2xx
+          target: https://x
+    asserts:
+      - failedTemplate:
+          errorPattern: 'check name "http_foo_bar" must be <proto>_<host>'
+
+  - it: should fail on a module with an unsupported protocol prefix
+    set:
+      checks:
+        - name: http_foo
+          module: custom_mod
+          target: https://x
+    asserts:
+      - failedTemplate:
+          errorPattern: unsupported protocol prefix
+
+  - it: should fail when target is missing
+    set:
+      checks:
+        - name: http_foo
+          module: http_2xx
+    asserts:
+      - failedTemplate:
+          errorPattern: checks\[\].target is required
+
+  - it: should fail on an interval above 60s
+    set:
+      checks:
+        - name: http_foo
+          module: http_2xx
+          target: https://x
+          interval: 61s
+    asserts:
+      - failedTemplate:
+          errorPattern: must be at most 60s
+
+  - it: should fail on a non-seconds interval
+    set:
+      checks:
+        - name: http_foo
+          module: http_2xx
+          target: https://x
+          interval: 1m
+    asserts:
+      - failedTemplate:
+          errorPattern: must be seconds
+
+  - it: should fail on an invalid sensitivity
+    set:
+      checks:
+        - name: http_foo
+          module: http_2xx
+          target: https://x
+          sensitivity: super
+    asserts:
+      - failedTemplate:
+          errorPattern: invalid sensitivity
+
+  - it: should fail on an invalid severity
+    set:
+      checks:
+        - name: http_foo
+          module: http_2xx
+          target: https://x
+          severity: blocker
+    asserts:
+      - failedTemplate:
+          errorPattern: invalid severity
+
+  - it: should fail when scrape_timeout is set
+    set:
+      checks:
+        - name: http_foo
+          module: http_2xx
+          target: https://x
+          scrape_timeout: 10s
+    asserts:
+      - failedTemplate:
+          errorPattern: scrape_timeout is forbidden
+
+  - it: should fail on a reserved extraLabels key
+    set:
+      checks:
+        - name: http_foo
+          module: http_2xx
+          target: https://x
+          extraLabels:
+            team: evil
+    asserts:
+      - failedTemplate:
+          errorPattern: 'extraLabels key "team" in check "http_foo" is reserved'
+
+  - it: should fail on duplicate check names
+    set:
+      checks:
+        - name: http_foo
+          module: http_2xx
+          target: https://x
+        - name: http_foo
+          module: http_2xx
+          target: https://y
+    asserts:
+      - failedTemplate:
+          errorPattern: 'http_foo.*collides with another after normalization'
+
+  - it: should fail when two names collide only after normalization
+    set:
+      checks:
+        - name: http_Api
+          module: http_2xx
+          target: https://x
+        - name: http_api
+          module: http_2xx
+          target: https://y
+    asserts:
+      - failedTemplate:
+          errorPattern: collides with another after normalization
+
+  - it: should keep YAML-hostile target and module values intact
+    set:
+      checks:
+        - name: http_tricky
+          module: http_2xx
+          target: "https://x/api?a=b: c"
+    asserts:
+      - equal:
+          path: spec.params.target[0]
+          value: "https://x/api?a=b: c"

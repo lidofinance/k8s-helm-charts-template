@@ -496,7 +496,7 @@ type: application
 dependencies:
   - name: alertmanager-routes
     alias: shared-alertmanager-routes
-    version: 1.8.0
+    version: 1.9.0
     repository: "oci://ghcr.io/lidofinance/helm-charts"
 ```
 

@@ -35,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          charts=("helm-chart" "alerts" "grafana-dashboards" "alertmanager-routes")
+          charts=("helm-chart" "alerts" "grafana-dashboards" "alertmanager-routes" "blackbox-checks")
           for chart in "${charts[@]}"; do
             helm lint "${chart}/"
             chart_version_from_file=$(grep '^version:' "${chart}/Chart.yaml" | awk '{print $2}')

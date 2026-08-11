@@ -1,0 +1,23 @@
+# Value for the `env` label stamped on every check's series (e.g. nonprod, prod).
+env: ""
+
+# Where the platform-managed blackbox-sensors ConfigMap is mounted in the
+# Prometheus pod. Teams don't set this; the template falls back to this path.
+# sensorsPath: /etc/prometheus/configmaps/blackbox-sensors
+
+checks: []
+# Example:
+# checks:
+#   - name: http_csm.testnet.fi         # <proto>_<rest>; proto: http|dns|tcp|icmp;
+#                                       # exactly one underscore (after the proto)
+#     module: http_2xx_redir_cookie     # blackbox module; must have an allowed proto prefix
+#     target: https://csm.testnet.fi
+#     interval: 10s                     # optional; seconds only; max 60s
+#     sensitivity: high                 # optional: none|low|medium|high (default medium)
+#     severity: major                   # optional: warning|minor|normal|major|critical (default normal)
+#     extraLabels:                      # optional static labels; reserved keys are rejected
+#       component: web
+#
+# Consuming charts should define these values at the parent chart root and
+# render the resources with:
+# {{ include "lido.blackbox.render" . }}
