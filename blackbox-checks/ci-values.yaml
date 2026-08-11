@@ -1,0 +1,14 @@
+env: nonprod
+
+checks:
+  - name: http_example.testnet.fi
+    module: http_2xx_redir_cookie
+    target: https://example.testnet.fi
+    interval: 10s
+    sensitivity: high
+    severity: major
+    extraLabels:
+      component: web
+  - name: dns_example.testnet.fi
+    module: dns_testnet.fi
+    target: dns.google
