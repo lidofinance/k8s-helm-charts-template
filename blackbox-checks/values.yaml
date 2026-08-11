@@ -1,11 +1,8 @@
 # Value for the `env` label stamped on every check's series (e.g. nonprod, prod).
 env: ""
 
-# Directory inside the Prometheus pod where the platform-managed
-# blackbox-sensors ConfigMap is mounted. The platform owns the sensor lists;
-# consuming charts normally never set this. Note: as a library chart these
-# defaults do not merge into the consumer's values — the template falls back
-# to this same path when the consumer does not define sensorsPath.
+# Where the platform-managed blackbox-sensors ConfigMap is mounted in the
+# Prometheus pod. Teams don't set this; the template falls back to this path.
 # sensorsPath: /etc/prometheus/configmaps/blackbox-sensors
 
 checks: []

@@ -101,7 +101,7 @@ tests:
           target: https://x
     asserts:
       - failedTemplate:
-          errorPattern: 'check name "smtp_foo" must be <proto>_<rest>'
+          errorPattern: 'check name "smtp_foo" must be <proto>_<host>'
 
   - it: should fail on a check name with more than one underscore
     set:
@@ -111,7 +111,7 @@ tests:
           target: https://x
     asserts:
       - failedTemplate:
-          errorPattern: 'check name "http_foo_bar" must be <proto>_<rest>'
+          errorPattern: 'check name "http_foo_bar" must be <proto>_<host>'
 
   - it: should fail on a module with an unsupported protocol prefix
     set:
@@ -210,4 +210,28 @@ tests:
           target: https://y
     asserts:
       - failedTemplate:
-          errorPattern: 'duplicate check name: "http_foo"'
+          errorPattern: 'http_foo.*collides with another after normalization'
+
+  - it: should fail when two names collide only after normalization
+    set:
+      checks:
+        - name: http_Api
+          module: http_2xx
+          target: https://x
+        - name: http_api
+          module: http_2xx
+          target: https://y
+    asserts:
+      - failedTemplate:
+          errorPattern: collides with another after normalization
+
+  - it: should keep YAML-hostile target and module values intact
+    set:
+      checks:
+        - name: http_tricky
+          module: http_2xx
+          target: "https://x/api?a=b: c"
+    asserts:
+      - equal:
+          path: spec.params.target[0]
+          value: "https://x/api?a=b: c"

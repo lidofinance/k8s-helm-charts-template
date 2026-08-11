@@ -1,13 +1,8 @@
-{{/*
-Validate one check entry. Replicates the contract of the legacy
-blackbox-checks repo linter (scripts/lint_blackbox.py) so violations fail at
-template time (helm lint / ArgoCD render) instead of reaching Prometheus.
-*/}}
 {{- define "lido.blackbox.validate" -}}
 {{- $check := .check -}}
 {{- $name := required "checks[].name is required" $check.name -}}
-{{- if not (regexMatch "^(http|dns|tcp|icmp)_[A-Za-z0-9][^_]*$" $name) -}}
-{{- fail (printf "check name %q must be <proto>_<rest> with proto one of http|dns|tcp|icmp and exactly one underscore" $name) -}}
+{{- if not (regexMatch "^(http|dns|tcp|icmp)_[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$" $name) -}}
+{{- fail (printf "check name %q must be <proto>_<host>, proto one of http|dns|tcp|icmp, host made of letters, digits, dots and hyphens (it becomes the object name)" $name) -}}
 {{- end -}}
 {{- $module := required (printf "checks[].module is required (check %q)" $name) $check.module -}}
 {{- $proto := regexSplit "[._]" $module -1 | first -}}
@@ -44,49 +39,44 @@ template time (helm lint / ArgoCD render) instead of reaching Prometheus.
 {{- end -}}
 {{- end -}}
 
-{{/*
-Render one ScrapeConfig per entry in .Values.checks.
-The sensor fan-out uses file_sd files mounted from the platform-managed
-blackbox-sensors ConfigMap; the file glob is derived from the check's
-protocol prefix, matching the legacy /etc/prometheus/targets layout.
-*/}}
+{{/* Render a ScrapeConfig per .Values.checks entry. */}}
 {{- define "lido.blackbox.render" -}}
 {{- $root := . -}}
 {{- $seen := dict -}}
-{{/* Library chart values do not merge into the parent's root scope, so the
-     platform-owned mount path is defaulted here rather than in values.yaml. */}}
+{{/* Library values don't merge into the parent scope, so default the mount path here. */}}
 {{- $sensorsPath := $root.Values.sensorsPath | default "/etc/prometheus/configmaps/blackbox-sensors" -}}
 {{- range $check := $root.Values.checks }}
 {{- include "lido.blackbox.validate" (dict "check" $check) }}
-{{- if hasKey $seen $check.name }}
-{{- fail (printf "duplicate check name: %q" $check.name) }}
+{{- $objName := $check.name | replace "_" "-" | lower }}
+{{- if hasKey $seen $objName }}
+{{- fail (printf "check name %q collides with another after normalization (%q)" $check.name $objName) }}
 {{- end }}
-{{- $_ := set $seen $check.name true }}
+{{- $_ := set $seen $objName true }}
 {{- $proto := regexSplit "_" $check.name -1 | first }}
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: ScrapeConfig
 metadata:
-  name: {{ $check.name | replace "_" "-" | lower }}
+  name: {{ $objName }}
   namespace: {{ $root.Release.Namespace }}
 spec:
   metricsPath: /probe
   scheme: HTTP
 {{- with $check.interval }}
-  scrapeInterval: {{ . }}
+  scrapeInterval: {{ . | quote }}
 {{- end }}
   params:
     module:
-      - {{ $check.module }}
+      - {{ $check.module | quote }}
     target:
-      - {{ $check.target }}
+      - {{ $check.target | quote }}
   fileSDConfigs:
     - files:
-        - {{ printf "%s/%s-*.yml" $sensorsPath $proto }}
+        - {{ printf "%s/%s-*.yml" $sensorsPath $proto | quote }}
   relabelings:
-    # Keep the legacy job-name convention instead of the operator-derived
-    # scrapeConfig/<namespace>/<name> value.
+    # Preserve the check name as the job label; the operator would otherwise
+    # set job to scrapeConfig/<namespace>/<name>.
     - targetLabel: job
-      replacement: {{ $check.name }}
+      replacement: {{ $check.name | quote }}
     - sourceLabels:
         - __param_target
       targetLabel: target
@@ -94,12 +84,12 @@ spec:
         - __param_module
       targetLabel: module
     - targetLabel: sensitivity
-      replacement: {{ $check.sensitivity | default "medium" }}
+      replacement: {{ $check.sensitivity | default "medium" | quote }}
     - targetLabel: severity
-      replacement: {{ $check.severity | default "normal" }}
+      replacement: {{ $check.severity | default "normal" | quote }}
 {{- with $root.Values.env }}
     - targetLabel: env
-      replacement: {{ . }}
+      replacement: {{ . | quote }}
 {{- end }}
 {{- range $key, $value := $check.extraLabels }}
     - targetLabel: {{ $key }}
