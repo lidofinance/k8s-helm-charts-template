@@ -1,0 +1,5 @@
+alertmanagerConfigs:
+  - file: files/example-routes.yaml
+  - name: explicit-routes
+    namespace: custom-namespace
+    file: files/example-routes.yaml

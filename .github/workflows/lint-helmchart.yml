@@ -6,6 +6,7 @@ on:
       - 'helm-chart/**'
       - 'alerts/**'
       - 'grafana-dashboards/**'
+      - 'alertmanager-routes/**'
       - 'blackbox-checks/**'
       - '.github/workflows/*.yml'
 
@@ -50,6 +51,7 @@ jobs:
           helm lint helm-chart/
           helm lint alerts/
           helm lint grafana-dashboards/
+          helm lint alertmanager-routes/
           helm lint blackbox-checks/
 
       - name: Run chart-testing (list-changed)
@@ -91,6 +93,25 @@ jobs:
           {{ include "lido.alerts.render" . }}
           EOF
 
+          alertmanager_routes_version=$(grep '^version:' alertmanager-routes/Chart.yaml | awk '{print $2}')
+          mkdir -p "${tmp_root}/alertmanager-routes/templates" "${tmp_root}/alertmanager-routes/tests" "${tmp_root}/alertmanager-routes/files"
+          cat > "${tmp_root}/alertmanager-routes/Chart.yaml" <<EOF
+          apiVersion: v2
+          name: alertmanager-routes-consumer-test
+          version: 0.1.0
+          type: application
+          dependencies:
+            - name: alertmanager-routes
+              version: ${alertmanager_routes_version}
+              repository: "file://$(pwd)/alertmanager-routes"
+          EOF
+          cp alertmanager-routes/ci-values.yaml "${tmp_root}/alertmanager-routes/ci-values.yaml"
+          cp alertmanager-routes/tests/alertmanagerconfig_test.yaml "${tmp_root}/alertmanager-routes/tests/alertmanagerconfig_test.yaml"
+          cp alertmanager-routes/files/example-routes.yaml "${tmp_root}/alertmanager-routes/files/example-routes.yaml"
+          cat > "${tmp_root}/alertmanager-routes/templates/alertmanagerconfig.yaml" <<'EOF'
+          {{ include "lido.alertmanagerRoutes.render" . }}
+          EOF
+
           mkdir -p "${tmp_root}/grafana-dashboards/templates" "${tmp_root}/grafana-dashboards/tests" "${tmp_root}/grafana-dashboards/dashboards"
           cat > "${tmp_root}/grafana-dashboards/Chart.yaml" <<EOF
           apiVersion: v2
@@ -127,10 +148,12 @@ jobs:
           EOF
 
           helm dependency build "${tmp_root}/alerts"
+          helm dependency build "${tmp_root}/alertmanager-routes"
           helm dependency build "${tmp_root}/grafana-dashboards"
           helm dependency build "${tmp_root}/blackbox-checks"
 
           helm unittest helm-chart
           helm unittest "${tmp_root}/alerts"
+          helm unittest "${tmp_root}/alertmanager-routes"
           helm unittest "${tmp_root}/grafana-dashboards"
           helm unittest "${tmp_root}/blackbox-checks"

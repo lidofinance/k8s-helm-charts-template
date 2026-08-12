@@ -212,6 +212,41 @@ tests:
             name: FEATURE_X_ENABLED
             value: "true"
 
+  - it: should default sizeLimit on emptyDir volumes that omit one
+    set:
+      defaultEmptyDirSizeLimit: 256Mi
+      volumes:
+        - name: scratch
+          emptyDir: {}
+        - name: shm
+          emptyDir:
+            medium: Memory
+        - name: explicit
+          emptyDir:
+            sizeLimit: 16Mi
+        - name: pvc-vol
+          persistentVolumeClaim:
+            claimName: pvc-vol
+    asserts:
+      # bare emptyDir gets the configured default
+      - equal:
+          path: spec.template.spec.volumes[0].emptyDir.sizeLimit
+          value: 256Mi
+      # existing emptyDir fields (medium) preserved, default still applied
+      - equal:
+          path: spec.template.spec.volumes[1].emptyDir.medium
+          value: Memory
+      - equal:
+          path: spec.template.spec.volumes[1].emptyDir.sizeLimit
+          value: 256Mi
+      # explicit sizeLimit is never overridden
+      - equal:
+          path: spec.template.spec.volumes[2].emptyDir.sizeLimit
+          value: 16Mi
+      # non-emptyDir volumes are untouched
+      - notExists:
+          path: spec.template.spec.volumes[3].emptyDir
+
   - it: should render OpenBao token projection when OpenBao injection is enabled
     set:
       openbao:

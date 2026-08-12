@@ -125,8 +125,8 @@ spec:
         {{- end }}
       {{- if or .Values.volumes .Values.openbao.enabled }}
       volumes:
-        {{- with .Values.volumes }}
-        {{- toYaml . | nindent 8 }}
+        {{- if .Values.volumes }}
+        {{- include "chart.renderVolumes" (dict "volumes" .Values.volumes "default" .Values.defaultEmptyDirSizeLimit) | nindent 8 }}
         {{- end }}
         {{- if .Values.openbao.enabled }}
         - name: {{ $openbaoTokenVolumeName }}
