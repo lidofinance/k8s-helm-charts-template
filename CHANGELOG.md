@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.1] - 21-08-2026
+
+- Changed: the `blackbox-checks` library now also rejects an `interval` below 10s at template time, matching the platform's server-side floor (the Kyverno ScrapeConfig policy and the SRE main-stack validation). Previously only the 60s ceiling was enforced here, so a sub-10s interval passed `helm template` and failed later at admission. Lockstep version bump across all charts; no other chart changes.
+
 ## [1.8.0] - 04-08-2026
 
 - Added: new `blackbox-checks` library chart. Renders prometheus-operator `ScrapeConfig` resources for blackbox-exporter probes from a simple `checks:` values list; the sensor fan-out uses file_sd files from the platform-managed `blackbox-sensors` ConfigMap mount. Validation of the legacy blackbox-checks contract (name/module protocol prefixes, sensitivity/severity enums, interval <= 60s, forbidden scrape timeout, reserved labels, duplicate names) fails at template time. No changes to the other charts; version bump is lockstep-only.
