@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.1] - 21-08-2026
+
+- Changed: the `blackbox-checks` library now also rejects an `interval` below 10s at template time, matching the platform's server-side floor (the Kyverno ScrapeConfig policy and the SRE main-stack validation). Previously only the 60s ceiling was enforced here, so a sub-10s interval passed `helm template` and failed later at admission. Lockstep version bump across all charts; no other chart changes.
+
 ## [1.9.0] - 11-08-2026
 
 - Added: new `alertmanager-routes/` library chart. `lido.alertmanagerRoutes.render` renders team `AlertmanagerConfig` resources from parent-chart files; prometheus-operator merges them into the team Alertmanager, composing with the infra-provided OpsGenie catch-all. Team receiver credentials are not shipped as Secrets: infra injects them into the team Alertmanager from OpenBao as files. Slack inherits an Alertmanager `global.*_file` (a route omits the credential to inherit it); Telegram is referenced per-receiver as `botTokenFile`.

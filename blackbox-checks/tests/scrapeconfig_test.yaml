@@ -143,6 +143,17 @@ tests:
       - failedTemplate:
           errorPattern: must be at most 60s
 
+  - it: should fail on an interval below 10s
+    set:
+      checks:
+        - name: http_foo
+          module: http_2xx
+          target: https://x
+          interval: 5s
+    asserts:
+      - failedTemplate:
+          errorPattern: must be at least 10s
+
   - it: should fail on a non-seconds interval
     set:
       checks:
