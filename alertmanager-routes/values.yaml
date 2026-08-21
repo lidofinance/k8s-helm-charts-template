@@ -1,0 +1,16 @@
+alertmanagerConfigs: []
+# Example:
+# alertmanagerConfigs:
+#   - file: files/example-routes.yaml
+#     # Optional overrides:
+#     # name: example-routes
+#     # namespace: team-csm
+#
+# Each file holds an AlertmanagerConfig spec (route/receivers in camelCase).
+#
+# Consuming charts should define these values at the parent chart root and
+# render the resources with:
+# {{ include "lido.alertmanagerRoutes.render" . }}
+#
+# Credentials are never set here: infra injects them from OpenBao as files, so a
+# route omits the per-receiver credential (slackConfigs with no apiURL) to inherit it.
