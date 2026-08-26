@@ -21,8 +21,8 @@ deployment:
 PodDisruptionBudget:
   enabled: true
   # Can only set either maxUnavailable or minAvailable, not both
-  maxUnavailable: 1
-  # minAvailable: 1
+  # maxUnavailable: 0
+  minAvailable: 1
 
 HorizontalPodAutoscaler:
   enabled: true
@@ -91,11 +91,11 @@ resources:
   limits:
     cpu: 100m
     memory: 56Mi
-    # ephemeral-storage: 1Gi
+    ephemeral-storage: 1Gi
   requests:
     cpu: 100m
     memory: 56Mi
-    # ephemeral-storage: 512Mi
+    ephemeral-storage: 512Mi
 
 service:
   # Whether service is enabled or disabled
