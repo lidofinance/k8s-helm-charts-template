@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.9.2] - 26-08-2026
+
+- Added default `limits.ephemeral-storage` and `requests.ephemeral-storage`.
+- Changed PodDisruptionBudget defaults.
+
 ## [1.9.1] - 21-08-2026
 
 - Changed: the `blackbox-checks` library now also rejects an `interval` below 10s at template time, matching the platform's server-side floor (the Kyverno ScrapeConfig policy and the SRE main-stack validation). Previously only the 60s ceiling was enforced here, so a sub-10s interval passed `helm template` and failed later at admission. Lockstep version bump across all charts; no other chart changes.
