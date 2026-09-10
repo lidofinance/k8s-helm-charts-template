@@ -85,7 +85,7 @@ The following table lists the configurable parameters of the chart and their def
 | Parameter                       | Description                         | Default                  |
 | ------------------------------- | ----------------------------------- | ------------------------ |
 | `name`                          | Application name                    | `OVERRIDE-ME`            |
-| `replicas`                      | Number of replicas                  | `1`                      |
+| `replicas`                      | Number of replicas when HPA is disabled | `1`                  |
 | `maxSurge`                      | Max surge for deployment            | `1`                      |
 | `maxUnavailable`                | Max unavailable for deployment      | `0`                      |
 | `minAvailable`                  | Max available for deployment        | `1`                      |
@@ -149,6 +149,18 @@ Horizontal Pod Autoscaler is enabled by default with:
 - minReplicas: 1
 - maxReplicas: 3
 - averageUtilization: 70%
+
+When `HorizontalPodAutoscaler.enabled` is `true`, the chart omits
+`Deployment.spec.replicas` so that the HPA is the only controller managing the
+replica count. Configure the lower bound with
+`HorizontalPodAutoscaler.minReplicas`; the top-level `replicas` value is used
+only when the HPA is disabled.
+
+When upgrading to chart version 1.9.3 or later, no values schema changes are
+required. If an HPA-enabled application previously relied on `replicas` as its
+baseline, move that value to `HorizontalPodAutoscaler.minReplicas`. Also verify
+that CPU requests represent normal application usage because CPU utilization
+targets are calculated relative to the requests.
 
 ### PersistentVolumeClaim
 
