@@ -32,9 +32,8 @@ tests:
           value: "true"
 
       # ─────────────── spec.replicas ───────────────
-      - equal:
+      - notExists:
           path: spec.replicas
-          value: 3
 
       # ─────────────── selector.matchLabels ───────────────
       - equal:
@@ -211,6 +210,16 @@ tests:
           content:
             name: FEATURE_X_ENABLED
             value: "true"
+
+  - it: should render replicas when HorizontalPodAutoscaler is disabled
+    set:
+      replicas: 4
+      HorizontalPodAutoscaler:
+        enabled: false
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 4
 
   - it: should default sizeLimit on emptyDir volumes that omit one
     set:

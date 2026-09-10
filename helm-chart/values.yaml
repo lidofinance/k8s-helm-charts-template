@@ -2,7 +2,7 @@ name: OVERRIDE-ME
 team: OVERRIDE-ME
 env: OVERRIDE-ME
 
-# Replica count for default deployment
+# Replica count for default deployment when HorizontalPodAutoscaler is disabled
 replicas: 1
 
 # Max surge for default deployment
@@ -26,6 +26,7 @@ PodDisruptionBudget:
 
 HorizontalPodAutoscaler:
   enabled: true
+  # Minimum replica count when HorizontalPodAutoscaler is enabled
   minReplicas: 1
   maxReplicas: 3
   averageUtilization: 70

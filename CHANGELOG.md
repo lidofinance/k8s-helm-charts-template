@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.9.3] - 10-09-2026
+
+- Fixed HPA-enabled deployments continuously reconciling between
+  `Deployment.spec.replicas` and the replica count managed by the HPA. The
+  deployment template now renders `spec.replicas` only when HPA is disabled.
+
 ## [1.9.2] - 26-08-2026
 
 - Added default `limits.ephemeral-storage` and `requests.ephemeral-storage`.
