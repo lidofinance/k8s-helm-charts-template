@@ -156,7 +156,7 @@ replica count. Configure the lower bound with
 `HorizontalPodAutoscaler.minReplicas`; the top-level `replicas` value is used
 only when the HPA is disabled.
 
-When upgrading to chart version 1.9.3 or later, no values schema changes are
+When upgrading to chart version 1.9.4 or later, no values schema changes are
 required. If an HPA-enabled application previously relied on `replicas` as its
 baseline, move that value to `HorizontalPodAutoscaler.minReplicas`. Also verify
 that CPU requests represent normal application usage because CPU utilization

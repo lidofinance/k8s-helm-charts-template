@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.9.4] - 10-09-2026
+
+- Re-release of 1.9.3 with no functional changes. The 1.9.3 version was
+  consumed by a failed immutable release and cannot be reused.
+
 ## [1.9.3] - 10-09-2026
 
 - Fixed HPA-enabled deployments continuously reconciling between
