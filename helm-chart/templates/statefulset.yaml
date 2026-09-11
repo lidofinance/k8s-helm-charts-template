@@ -1,34 +1,40 @@
-{{- if .Values.deployment.enabled }}
+{{- if .Values.statefulset.enabled }}
+{{- if .Values.deployment.enabled }}{{- fail "statefulset.enabled=true requires deployment.enabled=false" -}}{{- end }}
 {{- $openbaoTokenVolumeName := dig "serviceAccountToken" "volumeName" "openbao-token" .Values.openbao }}
 {{- $openbaoTokenExpirationSeconds := dig "serviceAccountToken" "expirationSeconds" 3600 .Values.openbao }}
 {{- $openbaoAnnotations := omit .Values.openbao.annotations "vault.hashicorp.com/agent-service-account-token-volume-name" }}
-{{- $strategy := .Values.deployment.strategy | default dict }}
-{{- $strategyType := default "RollingUpdate" $strategy.type }}
+{{- $containers := default .Values.containers .Values.statefulset.containers }}
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ .Values.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    resource: deployment
+    resource: statefulset
     {{- include "specific.labels" . | nindent 4 }}
-  {{- with .Values.deployment.annotations }}
+  {{- with .Values.statefulset.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if not .Values.HorizontalPodAutoscaler.enabled }}
+  serviceName: {{ default .Values.name .Values.statefulset.serviceName }}
   replicas: {{ .Values.replicas }}
+  revisionHistoryLimit: {{ default 5 .Values.statefulset.revisionHistoryLimit }}
+  {{- with .Values.statefulset.podManagementPolicy }}
+  podManagementPolicy: {{ . }}
   {{- end }}
-  revisionHistoryLimit: 5
+  {{- with .Values.statefulset.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ .Values.name }}
   template:
     metadata:
       labels:
-        resource: deployment
+        resource: statefulset
         {{- include "specific.labels" . | nindent 8 }}
       {{- if .Values.openbao.enabled }}
       annotations:
@@ -51,9 +57,7 @@ spec:
         {{- include "chart.renderContainers" (dict "root" $ "containers" . "requireProbes" false) | nindent 8 }}
       {{- end }}
       containers:
-        {{- if .Values.containers }}
-        {{- include "chart.renderContainers" (dict "root" $ "containers" .Values.containers "requireProbes" true) | nindent 8 }}
-        {{- end }}
+        {{- include "chart.renderContainers" (dict "root" $ "containers" $containers "requireProbes" true) | nindent 8 }}
       {{- if or .Values.volumes .Values.openbao.enabled }}
       volumes:
         {{- if .Values.volumes }}
@@ -69,11 +73,8 @@ spec:
                   audience: openbao
         {{- end }}
       {{- end }}
-  strategy:
-    type: {{ $strategyType }}
-    {{- if eq $strategyType "RollingUpdate" }}
-    rollingUpdate:
-      maxSurge: {{ dig "rollingUpdate" "maxSurge" .Values.maxSurge $strategy }}
-      maxUnavailable: {{ dig "rollingUpdate" "maxUnavailable" .Values.maxUnavailable $strategy }}
-    {{- end }}
+  {{- with .Values.statefulset.volumeClaimTemplates }}
+  volumeClaimTemplates:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}

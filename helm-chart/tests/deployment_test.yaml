@@ -312,3 +312,34 @@ tests:
                     path: token
                     expirationSeconds: 3600
                     audience: openbao
+
+  - it: should render configured Recreate strategy and initContainers
+    set:
+      deployment:
+        strategy:
+          type: Recreate
+      initContainers:
+        - name: init-config
+          image:
+            name: busybox
+            tag: "1.37.0"
+          command: ["/bin/sh", "-ec"]
+          args:
+            - echo ready > /work/ready
+          volumeMounts:
+            - name: data
+              mountPath: /work
+    asserts:
+      - equal:
+          path: spec.strategy.type
+          value: Recreate
+      - notExists:
+          path: spec.strategy.rollingUpdate
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-config
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: "busybox:1.37.0"
+      - notExists:
+          path: spec.template.spec.initContainers[0].readinessProbe

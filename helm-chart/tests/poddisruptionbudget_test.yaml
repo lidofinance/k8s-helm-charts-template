@@ -61,6 +61,24 @@ tests:
           path: spec.selector.matchLabels.resource
           value: deployment
 
+  - it: should select StatefulSet pods when StatefulSet is enabled
+    set:
+      replicas: 2
+      deployment:
+        enabled: false
+      statefulset:
+        enabled: true
+      HorizontalPodAutoscaler:
+        enabled: false
+      PodDisruptionBudget:
+        enabled: true
+        maxUnavailable: 1
+        minAvailable: null
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels.resource
+          value: statefulset
+
   # b. replicas: 1, HPA disabled, PDB enabled -> NO PDB rendered
   - it: should suppress PDB when replicas is 1 and HPA disabled
     set:

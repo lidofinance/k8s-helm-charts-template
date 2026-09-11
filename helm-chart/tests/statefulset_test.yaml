@@ -1,0 +1,78 @@
+suite: Test StatefulSet template
+templates:
+  - templates/statefulset.yaml
+values:
+  - ../ci-values.yaml
+release:
+  namespace: test-namespace
+tests:
+  - it: should not render statefulset if disabled
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render statefulset with volume claim templates
+    set:
+      deployment:
+        enabled: false
+      statefulset:
+        enabled: true
+        serviceName: test-app-headless
+        podManagementPolicy: Parallel
+        updateStrategy:
+          type: RollingUpdate
+        volumeClaimTemplates:
+          - metadata:
+              name: data
+            spec:
+              accessModes: ["ReadWriteOnce"]
+              storageClassName: longhorn-standard
+              resources:
+                requests:
+                  storage: 1Gi
+      initContainers:
+        - name: init-config
+          image:
+            name: busybox
+            tag: "1.37.0"
+          command: ["/bin/sh", "-ec"]
+          args:
+            - echo ready > /work/ready
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: metadata.name
+          value: test-app
+      - equal:
+          path: spec.serviceName
+          value: test-app-headless
+      - equal:
+          path: spec.podManagementPolicy
+          value: Parallel
+      - equal:
+          path: spec.updateStrategy.type
+          value: RollingUpdate
+      - equal:
+          path: spec.template.metadata.labels.resource
+          value: statefulset
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-config
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: "docker.io/test-image:v1.3.0"
+      - equal:
+          path: spec.volumeClaimTemplates[0].metadata.name
+          value: data
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: 1Gi
+
+  - it: should fail when statefulset and deployment are both enabled
+    set:
+      statefulset:
+        enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: statefulset.enabled=true requires deployment.enabled=false
