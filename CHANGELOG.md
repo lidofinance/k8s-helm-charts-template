@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.10.0] - 10-09-2026
+## [1.10.0] - 14-09-2026
 
 - Added: Service rendering now supports annotations, `clusterIP`, and `publishNotReadyAddresses`; this enables headless peer-discovery services for StatefulSet/quorum workloads.
 - Added: Deployment strategy can now be configured via `deployment.strategy`, while preserving the existing RollingUpdate defaults and top-level `maxSurge` / `maxUnavailable` compatibility.
