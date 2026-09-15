@@ -85,6 +85,43 @@ tests:
           path: spec.replicas
           value: 4
 
+  - it: should preserve explicit zero revisionHistoryLimit
+    set:
+      deployment:
+        enabled: false
+      statefulset:
+        enabled: true
+        revisionHistoryLimit: 0
+    asserts:
+      - equal:
+          path: spec.revisionHistoryLimit
+          value: 0
+
+  - it: should use statefulset containers when configured
+    set:
+      deployment:
+        enabled: false
+      statefulset:
+        enabled: true
+        containers:
+          - name: stateful-container
+            image:
+              name: busybox
+              tag: "1.37.0"
+            readinessProbe:
+              exec:
+                command: ["true"]
+            livenessProbe:
+              exec:
+                command: ["true"]
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].name
+          value: stateful-container
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: "busybox:1.37.0"
+
   - it: should fail when statefulset and deployment are both enabled
     set:
       statefulset:

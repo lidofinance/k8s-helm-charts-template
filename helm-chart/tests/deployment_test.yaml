@@ -221,6 +221,42 @@ tests:
           path: spec.replicas
           value: 4
 
+  - it: should preserve legacy top-level rolling update values
+    set:
+      maxSurge: 2
+      maxUnavailable: 1
+      deployment:
+        strategy:
+          type: RollingUpdate
+    asserts:
+      - equal:
+          path: spec.strategy.type
+          value: RollingUpdate
+      - equal:
+          path: spec.strategy.rollingUpdate.maxSurge
+          value: 2
+      - equal:
+          path: spec.strategy.rollingUpdate.maxUnavailable
+          value: 1
+
+  - it: should prefer deployment strategy rolling update values over top-level values
+    set:
+      maxSurge: 2
+      maxUnavailable: 1
+      deployment:
+        strategy:
+          type: RollingUpdate
+          rollingUpdate:
+            maxSurge: 3
+            maxUnavailable: 0
+    asserts:
+      - equal:
+          path: spec.strategy.rollingUpdate.maxSurge
+          value: 3
+      - equal:
+          path: spec.strategy.rollingUpdate.maxUnavailable
+          value: 0
+
   - it: should default sizeLimit on emptyDir volumes that omit one
     set:
       defaultEmptyDirSizeLimit: 256Mi

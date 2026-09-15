@@ -3,7 +3,10 @@
 {{- $openbaoTokenVolumeName := dig "serviceAccountToken" "volumeName" "openbao-token" .Values.openbao }}
 {{- $openbaoTokenExpirationSeconds := dig "serviceAccountToken" "expirationSeconds" 3600 .Values.openbao }}
 {{- $openbaoAnnotations := omit .Values.openbao.annotations "vault.hashicorp.com/agent-service-account-token-volume-name" }}
-{{- $containers := default .Values.containers .Values.statefulset.containers }}
+{{- $containers := .Values.containers }}
+{{- if hasKey .Values.statefulset "containers" }}
+{{- $containers = .Values.statefulset.containers }}
+{{- end }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -22,7 +25,11 @@ spec:
   {{- if not .Values.HorizontalPodAutoscaler.enabled }}
   replicas: {{ .Values.replicas }}
   {{- end }}
-  revisionHistoryLimit: {{ default 5 .Values.statefulset.revisionHistoryLimit }}
+  {{- if hasKey .Values.statefulset "revisionHistoryLimit" }}
+  revisionHistoryLimit: {{ .Values.statefulset.revisionHistoryLimit }}
+  {{- else }}
+  revisionHistoryLimit: 5
+  {{- end }}
   {{- with .Values.statefulset.podManagementPolicy }}
   podManagementPolicy: {{ . }}
   {{- end }}
