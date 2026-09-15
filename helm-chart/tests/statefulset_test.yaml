@@ -47,6 +47,8 @@ tests:
       - equal:
           path: spec.serviceName
           value: test-app-headless
+      - notExists:
+          path: spec.replicas
       - equal:
           path: spec.podManagementPolicy
           value: Parallel
@@ -68,6 +70,20 @@ tests:
       - equal:
           path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
           value: 1Gi
+
+  - it: should render replicas when HorizontalPodAutoscaler is disabled
+    set:
+      replicas: 4
+      deployment:
+        enabled: false
+      statefulset:
+        enabled: true
+      HorizontalPodAutoscaler:
+        enabled: false
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 4
 
   - it: should fail when statefulset and deployment are both enabled
     set:

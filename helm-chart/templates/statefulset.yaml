@@ -19,7 +19,9 @@ metadata:
   {{- end }}
 spec:
   serviceName: {{ default .Values.name .Values.statefulset.serviceName }}
+  {{- if not .Values.HorizontalPodAutoscaler.enabled }}
   replicas: {{ .Values.replicas }}
+  {{- end }}
   revisionHistoryLimit: {{ default 5 .Values.statefulset.revisionHistoryLimit }}
   {{- with .Values.statefulset.podManagementPolicy }}
   podManagementPolicy: {{ . }}
