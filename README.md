@@ -14,7 +14,9 @@ Available templates:
 The template includes pre-configured settings for:
 
 - Deployment configurations
+- StatefulSet configurations
 - Service definitions
+- ConfigMap rendering
 - Health checks and probes
 - Resource management
 - Ingress configurations
@@ -88,11 +90,19 @@ The following table lists the configurable parameters of the chart and their def
 | `replicas`                      | Number of replicas when HPA is disabled | `1`                  |
 | `maxSurge`                      | Max surge for deployment            | `1`                      |
 | `maxUnavailable`                | Max unavailable for deployment      | `0`                      |
+| `deployment.strategy`           | Deployment rollout strategy override | `RollingUpdate`          |
+| `statefulset.enabled`           | Enable StatefulSet rendering        | `false`                  |
+| `statefulset.serviceName`       | StatefulSet governing Service name  | `name`                   |
+| `statefulset.podManagementPolicy` | StatefulSet pod management policy | `nil`                    |
+| `statefulset.updateStrategy`    | StatefulSet update strategy         | `RollingUpdate`          |
+| `statefulset.volumeClaimTemplates` | Per-pod PVC templates for StatefulSet | `nil`                 |
 | `minAvailable`                  | Max available for deployment        | `1`                      |
 | `image.name`                    | Container registry/image            | `OVERRIDE-ME`            |
 | `image.tag`                     | Container image tag                 | `OVERRIDE-ME`            |
 | `image.pullPolicy`              | Image pull policy                   | `IfNotPresent`           |
 | `service.type`                  | Kubernetes service type             | `ClusterIP`              |
+| `service.clusterIP`             | Service clusterIP override, e.g. `None` for headless Services | `nil`  |
+| `service.publishNotReadyAddresses` | Publish pod addresses before readiness | `nil`                |
 | `service.ports`                 | Service ports configuration         | See values.yaml          |
 | `resources`                     | CPU/Memory/Storage requests/limits  | See values.yaml          |
 | `terminationGracePeriodSeconds` | Pod termination grace period        | `30`                     |
@@ -102,6 +112,8 @@ The following table lists the configurable parameters of the chart and their def
 | `pvc.enabled`                   | Enable or disable PVC               | `false`                  |
 | `pvcs`                          | List of PVCs, see values.yaml       | See values.yaml          |
 | `containers`                    | List of containers with params      | See values.yaml          |
+| `initContainers`                | List of initContainers with same shape as `containers`, probes optional | `nil` |
+| `configMaps`                    | List of ConfigMaps to render        | `nil`                    |
 | `containers[].command`          | Override container entrypoint       | `nil`                    |
 | `servicemonitor.endpoints`      | List of ServiceMonitors             | See values.yaml          |
 | `openbao.enabled`               | Enable OpenBao secret injection     | `false`                  |
@@ -214,6 +226,41 @@ containers:
         value: "8080"
     envMap:
       FEATURE_X_ENABLED: "true"
+```
+
+### ConfigMaps and initContainers
+
+Use `configMaps` to render small application configuration owned by the release. Values under `data` are rendered with Helm `tpl`, so they can refer to other chart values.
+
+`initContainers` use the same shape as `containers`, including image defaults, command/args, env, resources, security context, and volume mounts. Unlike regular containers, readiness and liveness probes are optional.
+
+### StatefulSet
+
+StatefulSet rendering is opt-in with `statefulset.enabled: true`. Set `deployment.enabled: false` when the chart should render only the StatefulSet workload. `statefulset.serviceName` defaults to `name`; for stable pod DNS, pair it with a headless Service:
+
+```yaml
+deployment:
+  enabled: false
+
+statefulset:
+  enabled: true
+  serviceName: my-app
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: longhorn-standard
+        resources:
+          requests:
+            storage: 10Gi
+
+service:
+  clusterIP: None
+  publishNotReadyAddresses: true
 ```
 
 ### Cronjobs

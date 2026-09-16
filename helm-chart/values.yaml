@@ -17,6 +17,35 @@ deployment:
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/path: "/_metrics"
+  # Deployment rollout strategy. Defaults preserve the historical RollingUpdate
+  # behavior and top-level maxSurge/maxUnavailable values.
+  # strategy:
+  #   type: Recreate
+  # strategy:
+  #   type: RollingUpdate
+  #   rollingUpdate:
+  #     maxSurge: 1
+  #     maxUnavailable: 0
+
+statefulset:
+  enabled: false
+  # serviceName defaults to .Values.name. For stable pod DNS, point it at a
+  # headless Service.
+  # serviceName: OVERRIDE-ME
+  # podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  # containers defaults to top-level containers when omitted.
+  # containers: []
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: data
+  #     spec:
+  #       accessModes: ["ReadWriteOnce"]
+  #       storageClassName: longhorn-standard
+  #       resources:
+  #         requests:
+  #           storage: 1Gi
 
 PodDisruptionBudget:
   enabled: true
@@ -102,9 +131,13 @@ service:
   # Whether service is enabled or disabled
   enabled: true
   # Type of service, generally don't need to change
-  type:
-    ClusterIP
-    # Service specific annotations
+  type: ClusterIP
+  # Optional, useful for headless StatefulSet services.
+  # clusterIP: None
+  # Optional, useful for quorum/peer-discovery workloads that need pod DNS
+  # before readiness.
+  # publishNotReadyAddresses: true
+  # Service specific annotations
   annotations:
     lido.fi/maintainer: Full name <OVERRIDE-ME@lido.fi>
     prometheus.io/probe: "true"
@@ -149,6 +182,31 @@ defaultEmptyDirSizeLimit: 1Gi
 #   - name: cache
 #     emptyDir:
 #       sizeLimit: 100Mi
+
+# Optional ConfigMaps rendered by this chart. Values in data are passed through
+# tpl, so they can refer to other chart values.
+# configMaps:
+#   - name: app-config
+#     data:
+#       app.yaml: |
+#         name: {{ .Values.name }}
+
+# Optional initContainers using the same container value shape as containers.
+# Readiness and liveness probes are not required for initContainers.
+# initContainers:
+#   - name: render-config
+#     image:
+#       name: busybox
+#       tag: "1.37.0"
+#     command: ["/bin/sh", "-ec"]
+#     args:
+#       - cp /config-src/app.yaml /config/app.yaml
+#     volumeMounts:
+#       - name: config-src
+#         mountPath: /config-src
+#         readOnly: true
+#       - name: config
+#         mountPath: /config
 
 # Ingress configuration enable if you need to expose the service to the outside world
 ingress:

@@ -25,6 +25,9 @@ tests:
       - equal:
           path: metadata.namespace
           value: test-namespace
+      - equal:
+          path: metadata.annotations["lido.fi/maintainer"]
+          value: Full name <OVERRIDE-ME@lido.fi>
       # ─────────────── template labels ───────────────
       - isNotEmpty:
           path: spec.template.metadata.labels
@@ -57,3 +60,16 @@ tests:
       - equal:
           path: spec.ports[1].targetPort
           value: 9100
+
+  - it: should render headless service fields for stateful workloads
+    set:
+      service:
+        clusterIP: None
+        publishNotReadyAddresses: true
+    asserts:
+      - equal:
+          path: spec.clusterIP
+          value: None
+      - equal:
+          path: spec.publishNotReadyAddresses
+          value: true

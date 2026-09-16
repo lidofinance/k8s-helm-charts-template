@@ -1,0 +1,45 @@
+suite: Test ConfigMap template
+templates:
+  - templates/configmap.yaml
+values:
+  - ../ci-values.yaml
+release:
+  namespace: test-namespace
+tests:
+  - it: should not render configmaps by default
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render configured configmaps
+    set:
+      configMaps:
+        - name: test-app-config
+          annotations:
+            checksum/source: abc
+          labels:
+            config-kind: runtime
+          data:
+            app.yaml: |
+              name: {{ .Values.name }}
+              env: {{ .Values.env }}
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.name
+          value: test-app-config
+      - equal:
+          path: metadata.namespace
+          value: test-namespace
+      - equal:
+          path: metadata.labels["config-kind"]
+          value: runtime
+      - equal:
+          path: metadata.annotations["checksum/source"]
+          value: abc
+      - equal:
+          path: data["app.yaml"]
+          value: |
+            name: test-app
+            env: test-env

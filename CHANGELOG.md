@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0] - 14-09-2026
+
+- Added: Service rendering now supports annotations, `clusterIP`, and `publishNotReadyAddresses`; this enables headless peer-discovery services for StatefulSet/quorum workloads.
+- Added: Deployment strategy can now be configured via `deployment.strategy`, while preserving the existing RollingUpdate defaults and top-level `maxSurge` / `maxUnavailable` compatibility.
+- Added: optional `configMaps` rendering and shared `initContainers` support for Deployment and StatefulSet pods.
+- Added: optional StatefulSet rendering with `serviceName`, `podManagementPolicy`, `updateStrategy`, and `volumeClaimTemplates`; HPA and PDB targets now follow the enabled workload kind.
+
 ## [1.9.4] - 10-09-2026
 
 - Re-release of 1.9.3 with no functional changes. The 1.9.3 version was
