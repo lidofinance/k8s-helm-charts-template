@@ -48,7 +48,7 @@ spec:
       {{- if or .Values.configMaps .Values.openbao.enabled }}
       annotations:
         {{- if .Values.configMaps }}
-        checksum/configmaps: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/configmaps: {{ include "chart.renderConfigMaps" . | sha256sum }}
         {{- end }}
         {{- if .Values.openbao.enabled }}
         {{- with $openbaoAnnotations }}
