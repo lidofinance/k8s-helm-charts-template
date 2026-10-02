@@ -28,9 +28,13 @@ tests:
       - equal:
           path: metadata.annotations["lido.fi/maintainer"]
           value: Full name <OVERRIDE-ME@lido.fi>
-      # ─────────────── template labels ───────────────
+      - notExists:
+          path: metadata.annotations["prometheus.io/probe"]
+      - notExists:
+          path: metadata.annotations["prometheus.io/path"]
+      # ─────────────── metadata labels ───────────────
       - isNotEmpty:
-          path: spec.template.metadata.labels
+          path: metadata.labels
       # ─────────────── spec ───────────────
       - equal:
           path: spec.selector["app.kubernetes.io/name"]
@@ -60,6 +64,20 @@ tests:
       - equal:
           path: spec.ports[1].targetPort
           value: 9100
+
+  - it: should render explicitly configured blackbox probe annotations
+    set:
+      service:
+        annotations:
+          prometheus.io/probe: "true"
+          prometheus.io/path: /healthz
+    asserts:
+      - equal:
+          path: metadata.annotations["prometheus.io/probe"]
+          value: "true"
+      - equal:
+          path: metadata.annotations["prometheus.io/path"]
+          value: /healthz
 
   - it: should render headless service fields for stateful workloads
     set:

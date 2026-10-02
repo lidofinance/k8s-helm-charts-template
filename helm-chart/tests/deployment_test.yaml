@@ -221,6 +221,39 @@ tests:
           path: spec.replicas
           value: 4
 
+  - it: should render pod affinity
+    set:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: test-app
+    asserts:
+      - equal:
+          path: spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey
+          value: kubernetes.io/hostname
+
+  - it: should add a configmaps checksum alongside OpenBao annotations
+    set:
+      configMaps:
+        - name: test-app-config
+          data:
+            app.yaml: |
+              name: {{ .Values.name }}
+      openbao:
+        enabled: true
+        annotations:
+          vault.hashicorp.com/agent-inject: "true"
+    asserts:
+      - matchRegex:
+          path: spec.template.metadata.annotations["checksum/configmaps"]
+          pattern: ^[a-f0-9]{64}$
+      - equal:
+          path: spec.template.metadata.annotations["vault.hashicorp.com/agent-inject"]
+          value: "true"
+
   - it: should preserve legacy top-level rolling update values
     set:
       maxSurge: 2

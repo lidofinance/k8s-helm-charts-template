@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.11.0] - 17-09-2026
+
+- Added: `servicemonitor.enabled` can suppress ServiceMonitor rendering.
+- Added: pod affinity and anti-affinity can be configured for Deployment and StatefulSet workloads through `affinity`.
+- Added: chart-managed ConfigMaps are checksummed in the pod template so configuration changes trigger a workload rollout.
+- Fixed: PodDisruptionBudget now keeps `minAvailable: 1` as an effective default without merging it with an explicitly configured `maxUnavailable`; explicit zero values are preserved.
+- Fixed: blackbox probe annotations are no longer applied to every Service by default; HTTP Services can opt in through `service.annotations`.
+- Migration: remove `minAvailable: 0` when it was used only to clear the old default alongside `maxUnavailable`.
+
 ## [1.10.0] - 14-09-2026
 
 - Added: Service rendering now supports annotations, `clusterIP`, and `publishNotReadyAddresses`; this enables headless peer-discovery services for StatefulSet/quorum workloads.

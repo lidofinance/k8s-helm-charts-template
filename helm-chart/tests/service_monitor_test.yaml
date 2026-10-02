@@ -6,7 +6,15 @@ values:
 release:
   namespace: test-namespace
 tests:
-  - it: should render service with values from ci-values.yaml
+  - it: should not render service monitor when disabled
+    set:
+      servicemonitor:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render service monitor with values from ci-values.yaml
     asserts:
       - isKind:
           of: ServiceMonitor
@@ -19,6 +27,6 @@ tests:
           value: test-namespace
       # ─────────────── template labels ───────────────
       - isNotEmpty:
-          path: spec.template.metadata.labels
+          path: metadata.labels
       - isNotEmpty:
           path: spec.selector.matchLabels

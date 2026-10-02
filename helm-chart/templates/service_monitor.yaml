@@ -1,3 +1,4 @@
+{{- if .Values.servicemonitor.enabled }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -22,3 +23,4 @@ spec:
           - 'false'
     matchLabels:
       {{- include "specific.labels" . | nindent 6 }}
+{{- end }}
