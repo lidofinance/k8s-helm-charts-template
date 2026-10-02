@@ -148,7 +148,7 @@ Prometheus monitoring is enabled by default with the following features:
 - Default metrics endpoint: `/_metrics`
 - Prometheus scrape annotations on deployment
 
-Set `servicemonitor.enabled: false` when the workload must not create a ServiceMonitor.
+Set `servicemonitor.enabled: false` when the workload must not create a ServiceMonitor. When it is enabled, at least one `servicemonitor.endpoints` entry is required.
 
 Blackbox probing through Service annotations is opt-in so non-HTTP Services are not probed accidentally:
 

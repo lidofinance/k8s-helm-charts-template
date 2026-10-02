@@ -1,8 +1,8 @@
 # Changelog
 
-## [1.11.0] - 17-09-2026
+## [1.11.0] - 02-10-2026
 
-- Added: `servicemonitor.enabled` can suppress ServiceMonitor rendering.
+- Added: `servicemonitor.enabled` can suppress ServiceMonitor rendering; enabling it without endpoints now fails at template time.
 - Added: pod affinity and anti-affinity can be configured for Deployment and StatefulSet workloads through `affinity`.
 - Added: chart-managed ConfigMaps are checksummed in the pod template so configuration changes trigger a workload rollout.
 - Fixed: PodDisruptionBudget now keeps `minAvailable: 1` as an effective default without merging it with an explicitly configured `maxUnavailable`; explicit zero values are preserved.

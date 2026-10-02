@@ -1,4 +1,8 @@
-{{- if .Values.servicemonitor.enabled }}
+{{- $serviceMonitor := .Values.servicemonitor | default dict }}
+{{- if $serviceMonitor.enabled }}
+{{- if not $serviceMonitor.endpoints }}
+{{- fail "servicemonitor.enabled=true requires at least one servicemonitor.endpoints entry" }}
+{{- end }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -9,7 +13,7 @@ metadata:
     {{- include "specific.labels" . | nindent 4 }}
 spec:
   endpoints:
-    {{- range .Values.servicemonitor.endpoints }}
+    {{- range $serviceMonitor.endpoints }}
     - interval: {{ .interval }}
       path: {{ .path }}
       port: {{ .port }}

@@ -14,6 +14,15 @@ tests:
       - hasDocuments:
           count: 0
 
+  - it: should fail when enabled without endpoints
+    set:
+      servicemonitor:
+        enabled: true
+        endpoints: []
+    asserts:
+      - failedTemplate:
+          errorMessage: "servicemonitor.enabled=true requires at least one servicemonitor.endpoints entry"
+
   - it: should render service monitor with values from ci-values.yaml
     asserts:
       - isKind:
