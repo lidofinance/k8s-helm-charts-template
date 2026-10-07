@@ -29,6 +29,8 @@ tests:
       - equal:
           path: spec.maxUnavailable
           value: 2
+      - notExists:
+          path: spec.minAvailable
       - equal:
           path: spec.selector.matchLabels["app.kubernetes.io/name"]
           value: test-app
@@ -147,6 +149,40 @@ tests:
       - equal:
           path: spec.minAvailable
           value: 1
+      - notExists:
+          path: spec.maxUnavailable
+
+  - it: should use minAvailable 1 when neither policy is configured
+    set:
+      name: test-app
+      replicas: 2
+      HorizontalPodAutoscaler:
+        enabled: false
+      PodDisruptionBudget:
+        enabled: true
+        maxUnavailable: null
+        minAvailable: null
+    asserts:
+      - equal:
+          path: spec.minAvailable
+          value: 1
+      - notExists:
+          path: spec.maxUnavailable
+
+  - it: should preserve an explicit zero minAvailable
+    set:
+      name: test-app
+      replicas: 2
+      HorizontalPodAutoscaler:
+        enabled: false
+      PodDisruptionBudget:
+        enabled: true
+        maxUnavailable: null
+        minAvailable: 0
+    asserts:
+      - equal:
+          path: spec.minAvailable
+          value: 0
       - notExists:
           path: spec.maxUnavailable
 

@@ -133,3 +133,32 @@ Regular containers require readiness and liveness probes; initContainers do not.
 {{- define "chart.workloadResourceLabel" -}}
 {{- if .Values.statefulset.enabled -}}statefulset{{- else -}}deployment{{- end -}}
 {{- end -}}
+
+{{/* Render ConfigMaps once so workload checksums cover the exact manifests. */}}
+{{- define "chart.renderConfigMaps" -}}
+{{- range .Values.configMaps }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ default $.Values.name .name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "specific.labels" $ | nindent 4 }}
+    {{- with .labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- with .data }}
+data:
+  {{- tpl (toYaml .) $ | nindent 2 }}
+{{- end }}
+{{- with .binaryData }}
+binaryData:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end -}}

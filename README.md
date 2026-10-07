@@ -89,20 +89,23 @@ The following table lists the configurable parameters of the chart and their def
 | `name`                          | Application name                    | `OVERRIDE-ME`            |
 | `replicas`                      | Number of replicas when HPA is disabled | `1`                  |
 | `maxSurge`                      | Max surge for deployment            | `1`                      |
-| `maxUnavailable`                | Max unavailable for deployment      | `0`                      |
+| `maxUnavailable`                | Max unavailable for deployment      | `1`                      |
 | `deployment.strategy`           | Deployment rollout strategy override | `RollingUpdate`          |
 | `statefulset.enabled`           | Enable StatefulSet rendering        | `false`                  |
 | `statefulset.serviceName`       | StatefulSet governing Service name  | `name`                   |
 | `statefulset.podManagementPolicy` | StatefulSet pod management policy | `nil`                    |
 | `statefulset.updateStrategy`    | StatefulSet update strategy         | `RollingUpdate`          |
 | `statefulset.volumeClaimTemplates` | Per-pod PVC templates for StatefulSet | `nil`                 |
-| `minAvailable`                  | Max available for deployment        | `1`                      |
+| `PodDisruptionBudget.enabled`   | Enable PodDisruptionBudget           | `true`                   |
+| `PodDisruptionBudget.minAvailable` | Minimum available pods; used as an effective default when neither policy is set | `1` |
+| `PodDisruptionBudget.maxUnavailable` | Maximum unavailable pods          | `nil`                    |
 | `image.name`                    | Container registry/image            | `OVERRIDE-ME`            |
 | `image.tag`                     | Container image tag                 | `OVERRIDE-ME`            |
 | `image.pullPolicy`              | Image pull policy                   | `IfNotPresent`           |
 | `service.type`                  | Kubernetes service type             | `ClusterIP`              |
 | `service.clusterIP`             | Service clusterIP override, e.g. `None` for headless Services | `nil`  |
 | `service.publishNotReadyAddresses` | Publish pod addresses before readiness | `nil`                |
+| `service.annotations`          | Service annotations; blackbox probing is opt-in | See values.yaml      |
 | `service.ports`                 | Service ports configuration         | See values.yaml          |
 | `resources`                     | CPU/Memory/Storage requests/limits  | See values.yaml          |
 | `terminationGracePeriodSeconds` | Pod termination grace period        | `30`                     |
@@ -114,8 +117,10 @@ The following table lists the configurable parameters of the chart and their def
 | `containers`                    | List of containers with params      | See values.yaml          |
 | `initContainers`                | List of initContainers with same shape as `containers`, probes optional | `nil` |
 | `configMaps`                    | List of ConfigMaps to render        | `nil`                    |
+| `affinity`                      | Kubernetes pod affinity and anti-affinity configuration | `{}`       |
 | `containers[].command`          | Override container entrypoint       | `nil`                    |
-| `servicemonitor.endpoints`      | List of ServiceMonitors             | See values.yaml          |
+| `servicemonitor.enabled`        | Enable ServiceMonitor rendering     | `true`                   |
+| `servicemonitor.endpoints`      | ServiceMonitor endpoints            | See values.yaml          |
 | `openbao.enabled`               | Enable OpenBao secret injection     | `false`                  |
 | `openbao.annotations`           | OpenBao agent annotations           | `{}`                     |
 | `openbao.serviceAccountToken.volumeName` | Projected token volume for OpenBao agent auth | `openbao-token` |
@@ -141,8 +146,18 @@ Prometheus monitoring is enabled by default with the following features:
 
 - Service Monitor for Prometheus Operator integration (Can be configured with additional endpoints)
 - Default metrics endpoint: `/_metrics`
-- Liveness probe metrics: `/_livenessProbe`
 - Prometheus scrape annotations on deployment
+
+Set `servicemonitor.enabled: false` when the workload must not create a ServiceMonitor. When it is enabled, at least one `servicemonitor.endpoints` entry is required.
+
+Blackbox probing through Service annotations is opt-in so non-HTTP Services are not probed accidentally:
+
+```yaml
+service:
+  annotations:
+    prometheus.io/probe: "true"
+    prometheus.io/path: /_livenessProbe
+```
 
 ### Pod Disruption Budget
 
@@ -150,9 +165,11 @@ Pod Disruption Budget is enabled by default with:
 
 - minAvailable: 1
 
-It should be configured on a per-app per-env basis. For example apps in critical should probably have minAvailable >=1. But there are some exceptions like singlton apps. Keep in mind that you can't set up both maxUnavailable and minAvailable.
+It should be configured on a per-app per-env basis. For example, critical applications should normally keep at least one pod available, while singleton applications may need to disable the PDB.
 
-Set exactly one of `maxUnavailable` or `minAvailable`; setting both makes `helm template` fail (since the chart default is `maxUnavailable: 1`, switching to `minAvailable` requires also setting `maxUnavailable: null`). The PodDisruptionBudget is auto-suppressed when the effective max replicas — the max of `replicas` and, when HPA is enabled, `HorizontalPodAutoscaler.maxReplicas` — is `<= 1`, so a single-pod chart renders no PDB even with the default `enabled: true`.
+Set at most one of `PodDisruptionBudget.maxUnavailable` or `PodDisruptionBudget.minAvailable`; setting both makes `helm template` fail. When neither is set, the chart renders `minAvailable: 1`. The PodDisruptionBudget is auto-suppressed when the effective max replicas — the max of `replicas` and, when HPA is enabled, `HorizontalPodAutoscaler.maxReplicas` — is `<= 1`, so a single-pod chart renders no PDB even with the default `enabled: true`.
+
+When upgrading from a chart that used `minAvailable: 0` only to clear the inherited default alongside `maxUnavailable`, remove `minAvailable`; explicit zero is now treated as a configured value.
 
 ### Horizontal Pod Autoscaler
 
@@ -232,7 +249,25 @@ containers:
 
 Use `configMaps` to render small application configuration owned by the release. Values under `data` are rendered with Helm `tpl`, so they can refer to other chart values.
 
+When `configMaps` is non-empty, the rendered ConfigMaps are checksummed into the Deployment or StatefulSet pod template. Changing their data therefore rolls the workload, including ConfigMaps mounted with `subPath`.
+
 `initContainers` use the same shape as `containers`, including image defaults, command/args, env, resources, security context, and volume mounts. Unlike regular containers, readiness and liveness probes are optional.
+
+### Pod affinity
+
+`affinity` accepts the native Kubernetes affinity object and is applied to both Deployment and StatefulSet pods. For example, this preferred anti-affinity spreads replicas across nodes:
+
+```yaml
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: my-app
+```
 
 ### StatefulSet
 

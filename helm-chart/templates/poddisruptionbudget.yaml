@@ -6,12 +6,17 @@
 {{- end -}}
 {{- $replicas := int (default 1 .Values.replicas) -}}
 {{- $effectiveMax := max $replicas $hpaMax -}}
+{{- $pdb := .Values.PodDisruptionBudget | default dict -}}
+{{- $maxUnavailable := get $pdb "maxUnavailable" -}}
+{{- $minAvailable := get $pdb "minAvailable" -}}
+{{- $hasMaxUnavailable := and (hasKey $pdb "maxUnavailable") (ne $maxUnavailable nil) -}}
+{{- $hasMinAvailable := and (hasKey $pdb "minAvailable") (ne $minAvailable nil) -}}
 {{- /* Setting both keys is a values bug; fail at render time instead of at the API. */ -}}
-{{- if and .Values.PodDisruptionBudget.enabled .Values.PodDisruptionBudget.maxUnavailable .Values.PodDisruptionBudget.minAvailable -}}
+{{- if and $pdb.enabled $hasMaxUnavailable $hasMinAvailable -}}
 {{- fail "PodDisruptionBudget: set exactly one of maxUnavailable or minAvailable, not both" -}}
 {{- end -}}
 {{- /* Skip the PDB entirely when the workload can never run more than one pod. */ -}}
-{{- if and .Values.PodDisruptionBudget.enabled (gt $effectiveMax 1) }}
+{{- if and $pdb.enabled (gt $effectiveMax 1) }}
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
@@ -19,11 +24,12 @@ metadata:
   name: {{ .Values.name }}-pdb
   namespace: {{ .Release.Namespace }}
 spec:
-  {{- if .Values.PodDisruptionBudget.maxUnavailable }}
-  maxUnavailable: {{ .Values.PodDisruptionBudget.maxUnavailable }}
-  {{- end }}
-  {{- if .Values.PodDisruptionBudget.minAvailable }}
-  minAvailable: {{ .Values.PodDisruptionBudget.minAvailable }}
+  {{- if $hasMaxUnavailable }}
+  maxUnavailable: {{ $maxUnavailable }}
+  {{- else if $hasMinAvailable }}
+  minAvailable: {{ $minAvailable }}
+  {{- else }}
+  minAvailable: 1
   {{- end }}
   selector:
     matchLabels:

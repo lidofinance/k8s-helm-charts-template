@@ -49,9 +49,10 @@ statefulset:
 
 PodDisruptionBudget:
   enabled: true
-  # Can only set either maxUnavailable or minAvailable, not both
+  # Set at most one of maxUnavailable or minAvailable. If neither is set,
+  # minAvailable defaults to 1 in the template.
   # maxUnavailable: 0
-  minAvailable: 1
+  # minAvailable: 1
 
 HorizontalPodAutoscaler:
   enabled: true
@@ -105,8 +106,6 @@ openbao:
   #   vault.hashicorp.com/agent-inject-command-app: |
   #     kill -HUP $(pidof nginx)
 
-# Not uses need implement
-
 # podAnnotations: {}
 
 # podLabels: {}
@@ -115,7 +114,8 @@ openbao:
 
 # tolerations: []
 
-# affinity: {}
+# Native Kubernetes pod affinity and anti-affinity configuration.
+affinity: {}
 
 resources:
   limits:
@@ -140,8 +140,10 @@ service:
   # Service specific annotations
   annotations:
     lido.fi/maintainer: Full name <OVERRIDE-ME@lido.fi>
-    prometheus.io/probe: "true"
-    prometheus.io/path: /_livenessProbe
+    # Blackbox probing is opt-in. Add these annotations only to HTTP services
+    # that expose the configured health endpoint.
+    # prometheus.io/probe: "true"
+    # prometheus.io/path: /_livenessProbe
   ports:
     - name: http
       port: 8080
@@ -151,6 +153,7 @@ service:
       targetPort: 8090
 
 servicemonitor:
+  enabled: true
   endpoints:
     - interval: 15s
       path: /metrics

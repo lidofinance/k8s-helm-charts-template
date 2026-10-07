@@ -2,7 +2,7 @@
 {{- if .Values.deployment.enabled }}{{- fail "statefulset.enabled=true requires deployment.enabled=false" -}}{{- end }}
 {{- $openbaoTokenVolumeName := dig "serviceAccountToken" "volumeName" "openbao-token" .Values.openbao }}
 {{- $openbaoTokenExpirationSeconds := dig "serviceAccountToken" "expirationSeconds" 3600 .Values.openbao }}
-{{- $openbaoAnnotations := omit .Values.openbao.annotations "vault.hashicorp.com/agent-service-account-token-volume-name" }}
+{{- $openbaoAnnotations := omit .Values.openbao.annotations "vault.hashicorp.com/agent-service-account-token-volume-name" "checksum/configmaps" }}
 {{- $containers := .Values.containers }}
 {{- if hasKey .Values.statefulset "containers" }}
 {{- $containers = .Values.statefulset.containers }}
@@ -45,12 +45,17 @@ spec:
       labels:
         resource: statefulset
         {{- include "specific.labels" . | nindent 8 }}
-      {{- if .Values.openbao.enabled }}
+      {{- if or .Values.configMaps .Values.openbao.enabled }}
       annotations:
+        {{- if .Values.configMaps }}
+        checksum/configmaps: {{ include "chart.renderConfigMaps" . | sha256sum }}
+        {{- end }}
+        {{- if .Values.openbao.enabled }}
         {{- with $openbaoAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
         vault.hashicorp.com/agent-service-account-token-volume-name: {{ $openbaoTokenVolumeName | quote }}
+        {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
@@ -61,6 +66,10 @@ spec:
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
         fsGroupChangePolicy: OnRootMismatch
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.initContainers }}
       initContainers:
         {{- include "chart.renderContainers" (dict "root" $ "containers" . "requireProbes" false) | nindent 8 }}

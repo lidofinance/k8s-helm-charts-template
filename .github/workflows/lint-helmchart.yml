@@ -157,3 +157,31 @@ jobs:
           helm unittest "${tmp_root}/alertmanager-routes"
           helm unittest "${tmp_root}/grafana-dashboards"
           helm unittest "${tmp_root}/blackbox-checks"
+
+      - name: Verify ConfigMap checksum changes
+        run: |
+          set -euo pipefail
+
+          checksum_a=$(
+            helm template checksum-test helm-chart \
+              --set name=checksum-test \
+              --set team=test \
+              --set env=test \
+              --set-json 'configMaps=[{"name":"app-config","data":{"app.yaml":"value-a"}}]' \
+              --show-only templates/deployment.yaml \
+              | awk '/checksum\/configmaps:/ { print $2; exit }'
+          )
+          checksum_b=$(
+            helm template checksum-test helm-chart \
+              --set name=checksum-test \
+              --set team=test \
+              --set env=test \
+              --set-json 'configMaps=[{"name":"app-config","data":{"app.yaml":"value-b"}}]' \
+              --show-only templates/deployment.yaml \
+              | awk '/checksum\/configmaps:/ { print $2; exit }'
+          )
+
+          if [[ -z "${checksum_a}" || -z "${checksum_b}" || "${checksum_a}" == "${checksum_b}" ]]; then
+            echo "ConfigMap checksum did not change after its data changed"
+            exit 1
+          fi
