@@ -46,8 +46,9 @@
 {{- define "lido.blackbox.render" -}}
 {{- $root := . -}}
 {{- $seen := dict -}}
-{{/* Library values don't merge into the parent scope, so default the mount path here. */}}
+{{/* Library values don't merge into the parent scope, so default here. */}}
 {{- $sensorsPath := $root.Values.sensorsPath | default "/etc/prometheus/configmaps/blackbox-sensors" -}}
+{{- $authSecret := $root.Values.sensorsAuthSecret | default "blackbox-scraper-auth" -}}
 {{- range $check := $root.Values.checks }}
 {{- include "lido.blackbox.validate" (dict "check" $check) }}
 {{- $objName := $check.name | replace "_" "-" | lower }}
@@ -63,7 +64,14 @@ metadata:
   namespace: {{ $root.Release.Namespace }}
 spec:
   metricsPath: /probe
-  scheme: HTTP
+  scheme: HTTPS
+  basicAuth:
+    username:
+      name: {{ $authSecret }}
+      key: username
+    password:
+      name: {{ $authSecret }}
+      key: password
 {{- with $check.interval }}
   scrapeInterval: {{ . | quote }}
 {{- end }}

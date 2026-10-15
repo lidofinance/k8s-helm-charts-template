@@ -34,6 +34,15 @@ tests:
           path: spec.metricsPath
           value: /probe
       - equal:
+          path: spec.scheme
+          value: HTTPS
+      - equal:
+          path: spec.basicAuth.username.name
+          value: blackbox-scraper-auth
+      - equal:
+          path: spec.basicAuth.password.name
+          value: blackbox-scraper-auth
+      - equal:
           path: spec.scrapeInterval
           value: 10s
       - equal:

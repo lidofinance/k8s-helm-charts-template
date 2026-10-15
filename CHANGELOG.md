@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.1] - 15-10-2026
+
+- Fixed: blackbox-checks ScrapeConfigs scrape the sensors over HTTPS with basic auth from the `blackbox-scraper-auth` Secret, as the cluster ScrapeConfig policy requires.
+
 ## [1.11.0] - 02-10-2026
 
 - Added: `servicemonitor.enabled` can suppress ServiceMonitor rendering; enabling it without endpoints now fails at template time.
