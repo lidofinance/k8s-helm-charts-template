@@ -5,6 +5,11 @@ env: ""
 # Prometheus pod. Teams don't set this; the template falls back to this path.
 # sensorsPath: /etc/prometheus/configmaps/blackbox-sensors
 
+# Name of the Secret (in the team namespace) holding the sensor basic-auth
+# credential. SRE provisions it as `blackbox-scraper-auth` with keys
+# username/password; every check references it. Teams don't set this.
+# sensorsAuthSecret: blackbox-scraper-auth
+
 checks: []
 # Example:
 # checks:
