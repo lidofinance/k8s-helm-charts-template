@@ -4,7 +4,7 @@ checks:
   - name: http_example.testnet.fi
     module: http_2xx_redir_cookie
     target: https://example.testnet.fi
-    interval: 10s
+    interval: 30s
     sensitivity: high
     severity: major
     extraLabels:
