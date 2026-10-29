@@ -17,7 +17,7 @@ checks: []
 #                                       # exactly one underscore (after the proto)
 #     module: http_2xx_redir_cookie     # blackbox module; must have an allowed proto prefix
 #     target: https://csm.testnet.fi
-#     interval: 10s                     # optional; seconds only; max 60s
+#     interval: 30s                     # optional; seconds only; 30s to 60s
 #     sensitivity: high                 # optional: none|low|medium|high (default medium)
 #     severity: major                   # optional: warning|minor|normal|major|critical (default normal)
 #     extraLabels:                      # optional static labels; reserved keys are rejected

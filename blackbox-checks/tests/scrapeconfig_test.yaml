@@ -44,7 +44,7 @@ tests:
           value: blackbox-scraper-auth
       - equal:
           path: spec.scrapeInterval
-          value: 10s
+          value: 30s
       - equal:
           path: spec.params.module[0]
           value: http_2xx_redir_cookie
@@ -152,16 +152,16 @@ tests:
       - failedTemplate:
           errorPattern: must be at most 60s
 
-  - it: should fail on an interval below 10s
+  - it: should fail on an interval below 30s
     set:
       checks:
         - name: http_foo
           module: http_2xx
           target: https://x
-          interval: 5s
+          interval: 29s
     asserts:
       - failedTemplate:
-          errorPattern: must be at least 10s
+          errorPattern: must be at least 30s
 
   - it: should fail on a non-seconds interval
     set:

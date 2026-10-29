@@ -25,8 +25,8 @@
 {{- if gt (. | trimSuffix "s" | int) 60 -}}
 {{- fail (printf "interval %q in check %q must be at most 60s" . $name) -}}
 {{- end -}}
-{{- if lt (. | trimSuffix "s" | int) 10 -}}
-{{- fail (printf "interval %q in check %q must be at least 10s" . $name) -}}
+{{- if lt (. | trimSuffix "s" | int) 30 -}}
+{{- fail (printf "interval %q in check %q must be at least 30s" . $name) -}}
 {{- end -}}
 {{- end -}}
 {{- if hasKey $check "timeout" -}}
