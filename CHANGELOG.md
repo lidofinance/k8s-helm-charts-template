@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.11.2] - 29-10-2026
+
+- Fixed: blackbox-checks fails the render for an interval below 30s, the same floor the cluster ScrapeConfig policy enforces. Before, 10s to 29s rendered and was then denied at admission.
+
 ## [1.11.1] - 15-10-2026
 
 - Fixed: blackbox-checks ScrapeConfigs scrape the sensors over HTTPS with basic auth from the `blackbox-scraper-auth` Secret, as the cluster ScrapeConfig policy requires.
