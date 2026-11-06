@@ -99,8 +99,9 @@ tests:
           content:
             targetLabel: severity
             replacement: normal
-      - notExists:
+      - equal:
           path: spec.scrapeInterval
+          value: 60s
 
   - it: should fail on a check name without an allowed protocol prefix
     set:
