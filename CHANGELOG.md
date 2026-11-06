@@ -1,11 +1,8 @@
 # Changelog
 
-## [1.11.3] - 06-11-2026
+## [1.11.2] - 06-11-2026
 
 - Changed: blackbox-checks always sets `scrapeInterval`, 60s when a check gives none. The cluster ScrapeConfig policy now requires the field.
-
-## [1.11.2] - 29-10-2026
-
 - Fixed: blackbox-checks fails the render for an interval below 30s, the same floor the cluster ScrapeConfig policy enforces. Before, 10s to 29s rendered and was then denied at admission.
 
 ## [1.11.1] - 15-10-2026
