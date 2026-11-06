@@ -72,9 +72,8 @@ spec:
     password:
       name: {{ $authSecret }}
       key: password
-{{- with $check.interval }}
-  scrapeInterval: {{ . | quote }}
-{{- end }}
+  {{- /* Always set: the Kyverno shape policy requires it. */}}
+  scrapeInterval: {{ $check.interval | default "60s" | quote }}
   params:
     module:
       - {{ $check.module | quote }}
