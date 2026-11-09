@@ -121,6 +121,8 @@ The following table lists the configurable parameters of the chart and their def
 | `containers[].command`          | Override container entrypoint       | `nil`                    |
 | `servicemonitor.enabled`        | Enable ServiceMonitor rendering     | `true`                   |
 | `servicemonitor.endpoints`      | ServiceMonitor endpoints            | See values.yaml          |
+| `servicemonitor.endpoints[].relabelings` | Relabel targets before scraping | `[]`                  |
+| `servicemonitor.endpoints[].metricRelabelings` | Relabel samples before ingestion | `[]`           |
 | `openbao.enabled`               | Enable OpenBao secret injection     | `false`                  |
 | `openbao.annotations`           | OpenBao agent annotations           | `{}`                     |
 | `openbao.serviceAccountToken.volumeName` | Projected token volume for OpenBao agent auth | `openbao-token` |
@@ -149,6 +151,30 @@ Prometheus monitoring is enabled by default with the following features:
 - Prometheus scrape annotations on deployment
 
 Set `servicemonitor.enabled: false` when the workload must not create a ServiceMonitor. When it is enabled, at least one `servicemonitor.endpoints` entry is required.
+
+Each endpoint supports optional `relabelings` and `metricRelabelings` lists using the Prometheus Operator field names. Rules are passed through as configured, preserving their order. Omitted or empty lists produce no corresponding field. For example, derive a ClickHouse pod's role from its StatefulSet ordinal and drop selected metrics:
+
+```yaml
+servicemonitor:
+  endpoints:
+    - interval: 30s
+      path: /metrics
+      port: metrics
+      scheme: http
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          regex: '.*-0'
+          targetLabel: role
+          replacement: primary
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          regex: '.*-1'
+          targetLabel: role
+          replacement: replica
+      metricRelabelings:
+        - action: drop
+          sourceLabels: [__name__]
+          regex: 'ClickHouseAsyncMetrics_.*'
+```
 
 Blackbox probing through Service annotations is opt-in so non-HTTP Services are not probed accidentally:
 
