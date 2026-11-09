@@ -45,6 +45,9 @@ jobs:
 
       - name: Set up chart-testing
         uses: helm/chart-testing-action@0d28d3144d3a25ea2cc349d6e59901c4ff469b3b # v2.7.0
+        with:
+          # The default Yamale 4.0.4 uses AST aliases removed in Python 3.14.
+          yamale_version: '6.1.0'
 
       - name: Run helm lint
         run: |
