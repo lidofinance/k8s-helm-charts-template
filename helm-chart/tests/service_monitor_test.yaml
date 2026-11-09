@@ -39,3 +39,106 @@ tests:
           path: metadata.labels
       - isNotEmpty:
           path: spec.selector.matchLabels
+      - equal:
+          path: spec.endpoints
+          value:
+            - interval: 15s
+              path: /metrics
+              port: metrics
+              scheme: http
+
+  - it: should preserve relabeling rules and keep endpoint configurations independent
+    set:
+      servicemonitor.endpoints:
+        - interval: 30s
+          path: /metrics
+          port: metrics
+          scheme: http
+          relabelings:
+            - sourceLabels: [__meta_kubernetes_pod_name]
+              regex: '.*-0'
+              targetLabel: role
+              replacement: primary
+            - sourceLabels: [__meta_kubernetes_pod_name]
+              regex: '.*-1'
+              targetLabel: role
+              replacement: replica
+          metricRelabelings:
+            - action: drop
+              sourceLabels: [__name__]
+              regex: 'ClickHouseAsyncMetrics_.*'
+        - interval: 60s
+          path: /extra-metrics
+          port: extra-metrics
+          scheme: https
+          metricRelabelings:
+            - action: labeldrop
+              regex: 'debug_.*'
+        - interval: 15s
+          path: /health-metrics
+          port: health-metrics
+          scheme: http
+          relabelings:
+            - action: replace
+              sourceLabels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name]
+              separator: '/'
+              regex: '(.*)/(.*)'
+              targetLabel: service
+              replacement: '${1}/${2}'
+        - interval: 15s
+          path: /plain-metrics
+          port: plain-metrics
+          scheme: http
+    asserts:
+      - equal:
+          path: spec.endpoints
+          value:
+            - interval: 30s
+              path: /metrics
+              port: metrics
+              scheme: http
+              relabelings:
+                - sourceLabels: [__meta_kubernetes_pod_name]
+                  regex: '.*-0'
+                  targetLabel: role
+                  replacement: primary
+                - sourceLabels: [__meta_kubernetes_pod_name]
+                  regex: '.*-1'
+                  targetLabel: role
+                  replacement: replica
+              metricRelabelings:
+                - action: drop
+                  sourceLabels: [__name__]
+                  regex: 'ClickHouseAsyncMetrics_.*'
+            - interval: 60s
+              path: /extra-metrics
+              port: extra-metrics
+              scheme: https
+              metricRelabelings:
+                - action: labeldrop
+                  regex: 'debug_.*'
+            - interval: 15s
+              path: /health-metrics
+              port: health-metrics
+              scheme: http
+              relabelings:
+                - action: replace
+                  sourceLabels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name]
+                  separator: '/'
+                  regex: '(.*)/(.*)'
+                  targetLabel: service
+                  replacement: '${1}/${2}'
+            - interval: 15s
+              path: /plain-metrics
+              port: plain-metrics
+              scheme: http
+
+  - it: should omit empty relabeling lists
+    set:
+      servicemonitor.endpoints[0].relabelings: []
+      servicemonitor.endpoints[0].metricRelabelings: []
+    asserts:
+      - notExists:
+          path: spec.endpoints[0].relabelings
+      - notExists:
+          path: spec.endpoints[0].metricRelabelings

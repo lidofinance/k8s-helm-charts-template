@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.12.0] - 09-11-2026
+
+- Added: ServiceMonitor endpoints pass through optional `relabelings` and `metricRelabelings` rules, enabling pod-derived labels such as ClickHouse primary/replica roles and metric filtering.
+
 ## [1.11.3] - 06-11-2026
 
 - Changed: blackbox-checks always sets `scrapeInterval`, 60s when a check gives none. The cluster ScrapeConfig policy now requires the field.

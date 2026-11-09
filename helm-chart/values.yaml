@@ -159,6 +159,9 @@ servicemonitor:
       path: /metrics
       port: metrics
       scheme: http
+      # Optional Prometheus Operator relabeling rules, passed through as configured.
+      relabelings: []
+      metricRelabelings: []
 
 pvc:
   enabled: false
